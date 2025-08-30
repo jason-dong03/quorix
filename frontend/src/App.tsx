@@ -13,7 +13,7 @@ function App() {
       <Container className="container mt-4">
         <div className="row">
           <h1>Quorix Login</h1>
-        <Button variant="primary">Login with Google</Button>
+          <Button variant="secondary">Login with Google</Button>
         </div>
         
       </Container>
