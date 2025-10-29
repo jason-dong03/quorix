@@ -15,23 +15,34 @@ import { TodaysPerformance } from "./components/TodaysPerformance.tsx";
 import { PortfolioStats } from "./components/PortfolioStats.tsx";
 import { Insights } from "./components/Insights.tsx";
 import { QuickActions } from "./components/QuickActions.tsx";
-import { fetchStockData } from "./data/stockData.ts";
+import {
+  useFetchHoldingsData,
+  useFetchStockData,
+  useFetchWatchlistData,
+} from "./data/stockData.ts";
 
 const AIPortfolioManager: React.FC = () => {
   const [timeframe, setTimeframe] = useState<string>("1D");
   const [holdingsTab, setHoldingsTab] = useState<HoldingsTab>("holdings");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const availableStocks = useFetchStockData();
+  const watchlistStocks = useFetchWatchlistData();
+  const holdingStocks = useFetchHoldingsData();
+  useEffect(() => {}, [availableStocks, watchlistStocks, holdingStocks]);
 
-  const availableStocks = fetchStockData();
-  useEffect(() => {
-    console.log("Available stocks:", availableStocks);
-  }, [availableStocks]);
-
-  const filteredStocks = availableStocks.filter(
-    (stock) =>
-      stock.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      stock.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredStocks = availableStocks
+    .map((s) => ({
+      symbol: s.symbol,
+      name: s.name,
+      last_price: s.last_price,
+      last_change_pct: s.last_change_pct,
+      last_updated: s.last_updated,
+    }))
+    .filter(
+      (stock) =>
+        stock.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        stock.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   const generateChartData = (days: number): ChartData[] => {
     const data: ChartData[] = [];
@@ -96,6 +107,8 @@ const AIPortfolioManager: React.FC = () => {
             <div className="card holdings-card">
               <div className="card-body p-4">
                 <PortfolioTabs
+                  portfolio={holdingStocks}
+                  watchlist={watchlistStocks}
                   holdingsTab={holdingsTab}
                   setHoldingsTab={setHoldingsTab}
                   searchQuery={searchQuery}
@@ -104,9 +117,9 @@ const AIPortfolioManager: React.FC = () => {
                 />
                 <div className="holdings-list">
                   {holdingsTab === "holdings" ? (
-                    <PortfolioHoldingList />
+                    <PortfolioHoldingList portfolio={holdingStocks} />
                   ) : holdingsTab === "watchlist" ? (
-                    <PortfolioWatchlist />
+                    <PortfolioWatchlist watchlist={watchlistStocks} />
                   ) : (
                     <PortfolioAddStockList filteredStocks={filteredStocks} />
                   )}

@@ -1,11 +1,16 @@
 import { TrendingDown, TrendingUp } from "lucide-react";
-import { watchlist } from "../data/stockData";
+import type { WatchlistStock } from "../types";
 
-export const PortfolioWatchlist: React.FC = () => {
+interface PortfolioWatchlistProps {
+  watchlist: WatchlistStock[];
+}
+export const PortfolioWatchlist: React.FC<PortfolioWatchlistProps> = ({
+  watchlist,
+}) => {
   return (
     <>
       {watchlist.map((stock) => {
-        const isPositive = stock.change >= 0;
+        const isPositive = stock.last_change_pct >= 0;
         return (
           <div key={stock.symbol} className="card stock-card mb-3">
             <div className="card-body">
@@ -20,13 +25,18 @@ export const PortfolioWatchlist: React.FC = () => {
                       <small className="text-muted">{stock.name}</small>
                     </div>
                     <small className="text-muted">
-                      Current Price: ${stock.current}
+                      Last Updated:{" "}
+                      {stock.last_updated
+                        ? new Date(stock.last_updated).toLocaleString()
+                        : "N/A"}
                     </small>
                   </div>
                 </div>
 
                 <div className="text-end">
-                  <h4 className="mb-1">${stock.current}</h4>
+                  <h4 className="mb-1">
+                    {Number(stock.last_price).toFixed(2)}
+                  </h4>
                   <div
                     className={`d-flex align-items-center justify-content-end ${
                       isPositive ? "text-success" : "text-danger"
@@ -39,7 +49,7 @@ export const PortfolioWatchlist: React.FC = () => {
                     )}
                     <span className="fw-semibold">
                       {isPositive ? "+" : ""}
-                      {stock.change}%
+                      {stock.last_change_pct}%
                     </span>
                   </div>
                 </div>

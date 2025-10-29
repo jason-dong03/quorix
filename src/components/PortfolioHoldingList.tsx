@@ -1,11 +1,16 @@
 import { TrendingDown, TrendingUp } from "lucide-react";
-import { portfolio } from "../data/stockData";
+import type { Holding } from "../types";
 
-export const PortfolioHoldingList: React.FC = () => {
+interface PortfolioHoldingListProps {
+  portfolio: Holding[];
+}
+export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({
+  portfolio,
+}) => {
   return (
     <>
       {portfolio.map((stock) => {
-        const isPositive = stock.change >= 0;
+        const isPositive = stock.last_change_pct >= 0;
         return (
           <div key={stock.symbol} className="card stock-card mb-3">
             <div className="card-body">
@@ -20,7 +25,10 @@ export const PortfolioHoldingList: React.FC = () => {
                       <small className="text-muted">{stock.name}</small>
                     </div>
                     <small className="text-muted">
-                      {stock.shares} shares @ ${stock.current}
+                      <span className="text-success">
+                        {Number(stock.shares).toFixed(2)}{" "}
+                      </span>
+                      shares @ ${stock.last_price}
                     </small>
                   </div>
                 </div>
@@ -28,9 +36,9 @@ export const PortfolioHoldingList: React.FC = () => {
                 <div className="text-end">
                   <h4 className="mb-1">
                     $
-                    {stock.value.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                    })}
+                    {(
+                      Number(stock.shares) * Number(stock.last_change_pct)
+                    ).toFixed(2)}
                   </h4>
                   <div
                     className={`d-flex align-items-center justify-content-end ${
@@ -44,7 +52,7 @@ export const PortfolioHoldingList: React.FC = () => {
                     )}
                     <span className="fw-semibold">
                       {isPositive ? "+" : ""}
-                      {stock.change}%
+                      {stock.last_change_pct}%
                     </span>
                   </div>
                 </div>

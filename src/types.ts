@@ -1,19 +1,20 @@
 // types.ts
-export interface Stock {
-  symbol: string;
+export interface Holding {
   name: string;
+  symbol: string;
+  last_price: number;
+  last_change_pct: number;
+  last_updated?: string;
   shares: number;
-  current: number;
-  change: number;
-  value: number;
+  avg_cost: number;
 }
 
 export interface WatchlistStock {
   symbol: string;
   name: string;
-  current: number;
-  change: number;
-  updated_at?: string;
+  last_price: number;
+  last_change_pct: number;
+  last_updated?: string;
 }
 
 export interface NewsItem {

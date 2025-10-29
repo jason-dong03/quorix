@@ -10,7 +10,8 @@ export const PortfolioAddStockList: React.FC<PortfolioAddStockListProps> = ({
   return (
     <>
       {filteredStocks.map((stock) => {
-        const isPositive = stock.change >= 0;
+        const isPositive = stock.last_change_pct >= 0;
+        console.log(isPositive);
         return (
           <div key={stock.symbol} className="card stock-card mb-3">
             <div className="card-body">
@@ -25,13 +26,18 @@ export const PortfolioAddStockList: React.FC<PortfolioAddStockListProps> = ({
                       <small className="text-muted">{stock.name}</small>
                     </div>
                     <small className="text-muted">
-                      Current Price: ${stock.current}
+                      Last Updated:{" "}
+                      {stock.last_updated
+                        ? new Date(stock.last_updated).toLocaleString()
+                        : "N/A"}
                     </small>
                   </div>
                 </div>
                 <div className="text-end d-flex align-items-center gap-3">
                   <div>
-                    <h4 className="mb-1">${stock.current}</h4>
+                    <h4 className="mb-1">
+                      ${Number(stock.last_price).toFixed(2)}
+                    </h4>
                     <div
                       className={`d-flex align-items-center justify-content-end ${
                         isPositive ? "text-success" : "text-danger"
@@ -44,7 +50,7 @@ export const PortfolioAddStockList: React.FC<PortfolioAddStockListProps> = ({
                       )}
                       <span className="fw-semibold">
                         {isPositive ? "+" : ""}
-                        {stock.change}%
+                        {stock.last_change_pct}%
                       </span>
                     </div>
                   </div>

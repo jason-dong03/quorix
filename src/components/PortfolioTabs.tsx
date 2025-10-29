@@ -1,6 +1,7 @@
-import { watchlist, portfolio } from "../data/stockData.ts";
-import type { HoldingsTab } from "../types.ts";
+import type { Holding, HoldingsTab, WatchlistStock } from "../types.ts";
 interface PortfolioTabsProps {
+  portfolio: Holding[];
+  watchlist: WatchlistStock[];
   holdingsTab: string;
   setHoldingsTab: React.Dispatch<React.SetStateAction<HoldingsTab>>;
   searchQuery: string;
@@ -8,6 +9,8 @@ interface PortfolioTabsProps {
   filteredStocks: any[];
 }
 export const PortfolioTabs: React.FC<PortfolioTabsProps> = ({
+  portfolio,
+  watchlist,
   holdingsTab,
   setHoldingsTab,
   searchQuery,

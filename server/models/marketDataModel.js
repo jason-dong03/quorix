@@ -37,10 +37,46 @@ export async function fetchLatestMarketData() {
   m.symbol,
   m.last_price,
   m.last_change_pct,
-  m.updated_at
+  m.last_updated
   FROM market_data_updates AS m
   JOIN tickers AS t
-  ON m.ticker_id = t.id;`;
+  ON m.symbol = t.symbol;`;
   const res = await query(sql);
+  return res.rows;
+}
+export async function fetchUserWatchlist(userId) {
+  const sql = `
+    SELECT 
+      t.name,
+      t.symbol,
+      m.last_price,
+      m.last_change_pct,
+      m.last_updated
+    FROM watchlist w
+    JOIN tickers t ON w.symbol = t.symbol
+    LEFT JOIN market_data_updates m ON m.symbol = t.symbol
+    WHERE w.user_id = $1;
+  `;
+  const res = await query(sql, [userId]);
+  return res.rows;
+}
+export async function fetchUserHoldings(userId) {
+  const sql = `
+    SELECT 
+      t.name,
+      t.symbol,
+      m.last_price,
+      m.last_change_pct,
+      m.last_updated,
+      h.shares,
+      h.avg_cost
+    FROM holdings h
+    JOIN tickers t
+      ON h.symbol = t.symbol
+    LEFT JOIN market_data_updates m
+      ON m.symbol = t.symbol
+    WHERE h.user_id = $1;
+  `;
+  const res = await query(sql, [userId]);
   return res.rows;
 }
