@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 
 import LandingPage from "./LandingPage";
-import AIPortfolioManager from "./Dashboard.tsx";
+import Dashboard from "./Dashboard.tsx";
 
 import ProtectedRoute from "./auth/ProtectedRoute";
 
@@ -19,7 +19,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <AIPortfolioManager />
+                <Dashboard />
               </ProtectedRoute>
             }
           />

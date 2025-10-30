@@ -483,3 +483,94 @@
     display: none;
   }
 }
+
+/* Custom Modal Styling */
+.custom-modal {
+  background-color: rgba(33, 37, 41, 0.95);
+  border: 1px solid rgba(73, 80, 87, 0.5);
+  border-radius: 1.5rem;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.custom-modal .modal-header {
+  padding: 1.5rem;
+  background: linear-gradient(
+    90deg,
+    rgba(13, 110, 253, 0.1) 0%,
+    rgba(111, 66, 193, 0.1) 50%,
+    rgba(13, 110, 253, 0.1) 100%
+  );
+  border-top-left-radius: 1.5rem;
+  border-top-right-radius: 1.5rem;
+}
+
+.custom-modal .modal-body {
+  padding: 1.5rem;
+}
+
+.custom-modal .modal-footer {
+  padding: 1.5rem;
+  background-color: rgba(33, 37, 41, 0.3);
+  border-bottom-left-radius: 1.5rem;
+  border-bottom-right-radius: 1.5rem;
+}
+
+.custom-modal .btn-close-white {
+  filter: brightness(0) invert(1);
+  opacity: 0.8;
+}
+
+.custom-modal .btn-close-white:hover {
+  opacity: 1;
+}
+
+/* Expandable Stock Card Styles */
+.stock-card .card-body {
+  padding: 1rem;
+}
+
+.stock-card-header:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  margin: -0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.stock-card-expanded {
+  animation: expandIn 0.3s ease-out;
+}
+
+.detail-card {
+  background-color: rgba(33, 37, 41, 0.3);
+  border: 1px solid rgba(73, 80, 87, 0.3);
+  border-radius: 0.75rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(73, 80, 87, 0.3);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* Expand Animation */
+@keyframes expandIn {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    max-height: 600px;
+    transform: translateY(0);
+  }
+}

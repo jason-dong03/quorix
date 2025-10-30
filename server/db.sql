@@ -24,9 +24,9 @@ CREATE TABLE IF NOT EXISTS holdings (
   user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   symbol TEXT NOT NULL REFERENCES tickers(symbol) ON DELETE CASCADE,
   shares NUMERIC(18,6) NOT NULL,
+  bought_at NUMERIC(18, 4) NOT NULL,
   avg_cost NUMERIC(18,4) NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE (user_id, symbol)
 );
 
 CREATE INDEX IF NOT EXISTS idx_holdings_user ON holdings(user_id);

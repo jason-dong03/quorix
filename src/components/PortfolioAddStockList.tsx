@@ -1,17 +1,29 @@
 import { TrendingDown, TrendingUp } from "lucide-react";
-import type { WatchlistStock } from "../types";
-
+import type { WatchlistStock, Holding } from "../types";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import "../css/Modal.css";
 interface PortfolioAddStockListProps {
   filteredStocks: WatchlistStock[];
+  onBuyClick?: (stock: WatchlistStock) => void;
+  modalID?: string;
 }
 export const PortfolioAddStockList: React.FC<PortfolioAddStockListProps> = ({
   filteredStocks,
+  onBuyClick,
+  modalID,
 }) => {
+  const handleAddWatchlist = () => {
+    console.log("Add to watchlist clicked");
+  };
+  const handleBuyClick = (stock: WatchlistStock) => {
+    if (onBuyClick) {
+      onBuyClick(stock);
+    }
+  };
   return (
     <>
       {filteredStocks.map((stock) => {
         const isPositive = stock.last_change_pct >= 0;
-        console.log(isPositive);
         return (
           <div key={stock.symbol} className="card stock-card mb-3">
             <div className="card-body">
@@ -54,8 +66,16 @@ export const PortfolioAddStockList: React.FC<PortfolioAddStockListProps> = ({
                       </span>
                     </div>
                   </div>
-                  <button className="btn btn-primary btn-sm">Add Stock</button>
-                  <button className="btn btn-watchlist btn-sm">
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target={modalID}
+                    onClick={() => handleBuyClick(stock)}
+                  >
+                    Buy
+                  </button>
+                  <button className="btn btn-watchlist btn-sm text-white">
                     Add Watchlist
                   </button>
                 </div>

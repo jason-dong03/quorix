@@ -35,7 +35,7 @@ export const PortfolioWatchlist: React.FC<PortfolioWatchlistProps> = ({
 
                 <div className="text-end">
                   <h4 className="mb-1">
-                    {Number(stock.last_price).toFixed(2)}
+                    ${Number(stock.last_price).toFixed(2)}
                   </h4>
                   <div
                     className={`d-flex align-items-center justify-content-end ${

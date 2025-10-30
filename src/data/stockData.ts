@@ -53,3 +53,21 @@ export function useFetchHoldingsData() {
   }, []);
   return holdings;
 }
+
+export async function addStockToHolding(stock: Holding) {
+  const res = await fetch("http://localhost:4000/api/holdings", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      symbol: stock.symbol,
+      bought_at: stock.bought_at,
+      shares: Number(stock.shares),
+      avg_cost: Number(stock.avg_cost),
+    }),
+  });
+
+  const result = await res.json();
+  console.log(result);
+  return result.success;
+}

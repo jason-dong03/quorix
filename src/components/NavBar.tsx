@@ -4,8 +4,8 @@ import { useAuth } from "../auth/AuthContext";
 
 const NavBar: React.FC = () => {
   const { user } = useAuth();
-  if (!user) return null;
 
+  if (!user) return null;
   return (
     <nav
       className="navbar navbar-expand-lg navbar-dark"
@@ -99,6 +99,7 @@ const NavBar: React.FC = () => {
               {user?.picture ? (
                 <img
                   src={user.picture}
+                  referrerPolicy="no-referrer"
                   alt="Profile"
                   style={{
                     width: "100%",

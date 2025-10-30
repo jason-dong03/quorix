@@ -24,7 +24,7 @@ app.use(marketDataRoutes);
 
 app.listen(4000, () => {
   console.log("auth server running on http://localhost:4000");
-  // insertEODData();
+  //insertEODData();
 });
 
-//startPriceUpdater();
+startPriceUpdater();

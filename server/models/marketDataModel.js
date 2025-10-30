@@ -69,7 +69,9 @@ export async function fetchUserHoldings(userId) {
       m.last_change_pct,
       m.last_updated,
       h.shares,
-      h.avg_cost
+      h.avg_cost,
+      h.updated_at,
+      h.bought_at
     FROM holdings h
     JOIN tickers t
       ON h.symbol = t.symbol
@@ -79,4 +81,18 @@ export async function fetchUserHoldings(userId) {
   `;
   const res = await query(sql, [userId]);
   return res.rows;
+}
+
+export async function updateUserHoldings(
+  userID,
+  symbol,
+  bought_at,
+  shares,
+  avg_cost
+) {
+  await query(
+    `INSERT INTO holdings (user_id, symbol, bought_at, shares, avg_cost)
+   VALUES ($1, $2, $3, $4, $5);`,
+    [userID, symbol, bought_at, shares, avg_cost]
+  );
 }

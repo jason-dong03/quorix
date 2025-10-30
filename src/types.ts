@@ -7,6 +7,8 @@ export interface Holding {
   last_updated?: string;
   shares: number;
   avg_cost: number;
+  updated_at?: string;
+  bought_at: number;
 }
 
 export interface WatchlistStock {
