@@ -184,7 +184,7 @@ export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({
                               gainLoss >= 0 ? "text-success" : "text-danger"
                             }`}
                           >
-                            {gainLoss >= 0 ? "+" : ""}$
+                            {gainLoss >= 0 ? "+" : "-"}$
                             {Math.abs(gainLoss).toLocaleString("en-US", {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
@@ -278,7 +278,7 @@ export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({
                                           : "text-danger"
                                       }`}
                                     >
-                                      {lotGainLoss >= 0 ? "+" : ""}$
+                                      {lotGainLoss >= 0 ? "+" : "-"}$
                                       {Math.abs(lotGainLoss).toFixed(2)} (
                                       {lotGainLossPct >= 0 ? "+" : ""}
                                       {lotGainLossPct.toFixed(2)}%)

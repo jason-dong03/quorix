@@ -1,19 +1,28 @@
 import { TrendingDown, TrendingUp } from "lucide-react";
-import type { WatchlistStock, Holding } from "../types";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import type { WatchlistStock } from "../types";
 import "../css/Modal.css";
+import { useState } from "react";
 interface PortfolioAddStockListProps {
-  filteredStocks: WatchlistStock[];
+  filteredStocks: any[];
+  onAddWatchlist: (stock: WatchlistStock) => Promise<void>;
   onBuyClick?: (stock: WatchlistStock) => void;
   modalID?: string;
 }
 export const PortfolioAddStockList: React.FC<PortfolioAddStockListProps> = ({
   filteredStocks,
   onBuyClick,
+  onAddWatchlist,
   modalID,
 }) => {
-  const handleAddWatchlist = () => {
-    console.log("Add to watchlist clicked");
+  const [addingSymbol, setAddingSymbol] = useState<string | null>(null);
+
+  const handleAddWatchlistClick = async (stock: WatchlistStock) => {
+    setAddingSymbol(stock.symbol);
+    try {
+      await onAddWatchlist(stock);
+    } finally {
+      setAddingSymbol(null);
+    }
   };
   const handleBuyClick = (stock: WatchlistStock) => {
     if (onBuyClick) {
@@ -75,8 +84,25 @@ export const PortfolioAddStockList: React.FC<PortfolioAddStockListProps> = ({
                   >
                     Buy
                   </button>
-                  <button className="btn btn-watchlist btn-sm text-white">
-                    Add Watchlist
+                  <button
+                    className={`btn btn-sm text-white ${
+                      stock.is_in_watchlist ? "btn-success" : "btn-watchlist"
+                    }`}
+                    onClick={() => handleAddWatchlistClick(stock)}
+                    disabled={
+                      stock.is_in_watchlist || addingSymbol === stock.symbol
+                    }
+                  >
+                    {addingSymbol === stock.symbol ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" />
+                        Adding...
+                      </>
+                    ) : stock.is_in_watchlist ? (
+                      "✓ In Watchlist"
+                    ) : (
+                      "Add to Watchlist"
+                    )}
                   </button>
                 </div>
               </div>

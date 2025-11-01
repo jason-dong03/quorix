@@ -5,6 +5,7 @@ import {
   fetchUserWatchlist,
   fetchUserHoldings,
   updateUserHoldings,
+  updateUserWatchlist,
 } from "../models/marketDataModel.js";
 const router = express.Router();
 
@@ -62,6 +63,19 @@ router.post("/api/holdings", async (req, res) => {
     const { symbol, bought_at, shares, avg_cost } = req.body;
 
     await updateUserHoldings(decoded.uid, symbol, bought_at, shares, avg_cost);
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error("add stock error:", err);
+    return res.status(500).json({ error: "Failed to add stock" });
+  }
+});
+router.post("/api/watchlist", async (req, res) => {
+  const token = req.cookies.session;
+  if (!token) return res.status(401).json({ error: "Not authenticated" });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { symbol } = req.body;
+    await updateUserWatchlist(decoded.uid, symbol);
     return res.status(200).json({ success: true });
   } catch (err) {
     console.error("add stock error:", err);

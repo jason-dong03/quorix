@@ -96,3 +96,11 @@ export async function updateUserHoldings(
     [userID, symbol, bought_at, shares, avg_cost]
   );
 }
+
+export async function updateUserWatchlist(userID, symbol) {
+  await query(
+    `INSERT INTO watchlist (user_id, symbol)
+   VALUES ($1, $2);`,
+    [userID, symbol]
+  );
+}

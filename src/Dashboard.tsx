@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./css/Dashboard.css";
-import type { ChartData, HoldingsTab, WatchlistStock } from "./types.ts";
+import type { HoldingsTab, WatchlistStock } from "./types.ts";
 import AINewsBar from "./components/AINewsBar.tsx";
 import Navbar from "./components/NavBar.tsx";
 import { PortfolioHeader } from "./components/PortfolioHeader.tsx";
@@ -16,6 +16,7 @@ import { PortfolioStats } from "./components/PortfolioStats.tsx";
 import { Insights } from "./components/Insights.tsx";
 import { QuickActions } from "./components/QuickActions.tsx";
 import {
+  addStockToWatchlist,
   useFetchHoldingsData,
   useFetchStockData,
   useFetchWatchlistData,
@@ -48,7 +49,8 @@ const Dashboard: React.FC = () => {
   const [holdingsTab, setHoldingsTab] = useState<HoldingsTab>("holdings");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const availableStocks = useFetchStockData();
-  const watchlistStocks = useFetchWatchlistData();
+  const { watchlistStocks: watchlistStocks, refetch: refetchWatchList } =
+    useFetchWatchlistData();
   const holdingStocks = useFetchHoldingsData();
   const [selectedStock, setSelectedStock] = useState<WatchlistStock | null>(
     null
@@ -58,15 +60,26 @@ const Dashboard: React.FC = () => {
   const handleBuyClick = (stock: WatchlistStock) => {
     setSelectedStock(stock);
   };
-
+  const handleAddWatchlist = async (stock: WatchlistStock) => {
+    try {
+      await addStockToWatchlist(stock);
+      refetchWatchList();
+    } catch (error) {
+      alert("failed to add to stock");
+    }
+  };
   const filteredStocks = availableStocks
-    .map((s) => ({
-      symbol: s.symbol,
-      name: s.name,
-      last_price: s.last_price,
-      last_change_pct: s.last_change_pct,
-      last_updated: s.last_updated,
-    }))
+    .map((s) => {
+      const isInWatchlist = watchlistStocks.some((w) => w.symbol === s.symbol);
+      return {
+        symbol: s.symbol,
+        name: s.name,
+        last_price: s.last_price,
+        last_change_pct: s.last_change_pct,
+        last_updated: s.last_updated,
+        is_in_watchlist: isInWatchlist,
+      };
+    })
     .filter(
       (stock) =>
         stock.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -120,6 +133,7 @@ const Dashboard: React.FC = () => {
                       <PortfolioAddStockList
                         filteredStocks={filteredStocks}
                         onBuyClick={handleBuyClick}
+                        onAddWatchlist={handleAddWatchlist}
                         modalID="#staticBackdrop"
                       />
                     )}

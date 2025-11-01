@@ -21,6 +21,8 @@ export function useFetchStockData() {
 
 export function useFetchWatchlistData() {
   const [watchlistStocks, setWatchlistStocks] = useState<WatchlistStock[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
+
   useEffect(() => {
     fetch(`http://localhost:4000/api/watchlist`, {
       method: "GET",
@@ -33,8 +35,10 @@ export function useFetchWatchlistData() {
       .catch(() => {
         setWatchlistStocks([]);
       });
-  }, []);
-  return watchlistStocks;
+  }, [refreshKey]);
+
+  const refetch = () => setRefreshKey((prev) => prev + 1);
+  return { watchlistStocks, refetch };
 }
 export function useFetchHoldingsData() {
   const [holdings, setHoldings] = useState<Holding[]>([]);
@@ -66,8 +70,21 @@ export async function addStockToHolding(stock: Holding) {
       avg_cost: Number(stock.avg_cost),
     }),
   });
-
   const result = await res.json();
-  console.log(result);
+  //console.log(result);
+  return result.success;
+}
+
+export async function addStockToWatchlist(stock: WatchlistStock) {
+  const res = await fetch("http://localhost:4000/api/watchlist", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      symbol: stock.symbol,
+    }),
+  });
+  const result = await res.json();
+  //console.log(result);
   return result.success;
 }
