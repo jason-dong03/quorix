@@ -1,20 +1,26 @@
-import { Sparkles, TrendingUp } from "lucide-react";
+import { Sparkles, TrendingDown, TrendingUp } from "lucide-react";
+import {
+  getPortfolioTodayGain,
+  getPortfolioTodayGainPct,
+  getPortfolioTotalValue,
+} from "../data/dashboardCalculationFunctions";
+import type { Holding, WatchlistStock } from "../types";
 
 interface PortfolioHeaderProps {
-  totalValue: number;
-  todayGain: number;
-  todayGainPercent: number;
+  holdings: Holding[];
+  stock_dict: WatchlistStock[];
   timeframe: string;
   setTimeframe: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export const PortfolioHeader: React.FC<PortfolioHeaderProps> = ({
-  totalValue,
-  todayGain,
-  todayGainPercent,
+  holdings,
+  stock_dict,
   timeframe,
   setTimeframe,
 }) => {
+  const todayGainPct = getPortfolioTodayGainPct(holdings, stock_dict);
+  const todayGain = getPortfolioTodayGain(holdings, stock_dict);
   return (
     <>
       <div className="card portfolio-header-card mb-4">
@@ -27,19 +33,43 @@ export const PortfolioHeader: React.FC<PortfolioHeaderProps> = ({
               </div>
               <h1 className="display-3 fw-bold mb-3">
                 $
-                {totalValue.toLocaleString("en-US", {
-                  minimumFractionDigits: 2,
-                })}
+                {getPortfolioTotalValue(holdings, stock_dict).toLocaleString(
+                  undefined,
+                  {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }
+                )}
               </h1>
               <div className="d-flex align-items-center gap-3">
-                <div className="d-flex align-items-center text-success fs-4">
-                  <TrendingUp size={24} className="me-2" />
+                <div
+                  className={`d-flex align-items-center ${
+                    todayGain > 0 ? "text-success" : "text-danger"
+                  } fs-4`}
+                >
+                  {todayGain > 0 ? (
+                    <>
+                      {" "}
+                      <TrendingUp size={24} className="me-2" />
+                    </>
+                  ) : (
+                    <TrendingDown size={24} className="me-2" />
+                  )}
                   <span className="fw-semibold">
-                    +${todayGain.toLocaleString()}
+                    {todayGain > 0 ? "+" : "-"}$
+                    {Math.abs(todayGain).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </span>
                 </div>
-                <span className="text-success fs-4 fw-semibold">
-                  +{todayGainPercent}%
+                <span
+                  className={`${
+                    todayGainPct > 0 ? "text-success" : "text-danger"
+                  } fs-4 fw-semibold`}
+                >
+                  {todayGainPct > 0 ? "+" : ""}
+                  {Number(todayGainPct).toFixed(2)}%
                 </span>
                 <small className="text-muted">Today</small>
               </div>

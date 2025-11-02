@@ -36,7 +36,6 @@
   padding: clamp(0.4rem, 0.8vw, 0.625rem) clamp(0.8rem, 1.5vw, 1.25rem);
 }
 
-/* Icons scale */
 .news-card svg {
   width: clamp(16px, 2vw, 20px);
   height: clamp(16px, 2vw, 20px);
@@ -92,6 +91,7 @@
   border-radius: 1.5rem;
   backdrop-filter: blur(20px);
   color: #ffffff;
+  animation: fadeIn 0.5s ease-in-out;
 }
 
 .portfolio-header-card {
@@ -253,7 +253,29 @@
   background-color: rgba(37, 197, 58, 0.5);
   border-color: rgba(37, 197, 58, 0.5);
 }
+.btn-remove-watchlist-glass {
+  background: rgb(136, 30, 40);
+  border: 1px solid rgb(220, 53, 69);
+  color: #fff;
+  font-size: clamp(0.75rem, 1.3vw, 0.9rem);
+  border-radius: 5px;
+  padding: 0.3rem 0.8rem;
+  transition: all 0.25s ease;
+}
 
+.btn-remove-watchlist-glass:hover {
+  background: rgb(176, 35, 50); /* lighter crimson */
+  border-color: rgb(255, 85, 100);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(220, 53, 69, 0.35);
+}
+
+.btn-remove-watchlist-glass:active {
+  background: rgb(110, 25, 35); /* darker pressed tone */
+  border-color: rgb(200, 45, 60);
+  transform: scale(0.97);
+  box-shadow: 0 2px 6px rgba(220, 53, 69, 0.25);
+}
 .btn-watchlist:hover {
   background-color: rgba(37, 197, 58, 0.7);
 }
@@ -338,7 +360,7 @@
   color: #198754 !important;
 }
 
-.bg-danger {
+.bg-danger-badge {
   background-color: rgba(220, 53, 69, 0.2) !important;
   color: #dc3545 !important;
 }
@@ -350,6 +372,10 @@
 
 .bg-warning {
   background-color: #ffc107 !important;
+}
+.bg-danger {
+  background-color: rgba(220, 53, 69) !important;
+  color: #dc3545 !important;
 }
 
 /* Hover Effects */
@@ -398,6 +424,23 @@
     max-height: 300px;
   }
 }
+@media (max-width: 725px) {
+  .news-card h5 {
+    font-size: clamp(1rem, 2.5vw, 1.5rem);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    min-width: 280px;
+    max-width: 280px;
+  }
+  .news-card .badge,
+  .brain-icon,
+  .news-indicator,
+  small {
+    display: none;
+  }
+}
 
 /* Animation */
 @keyframes fadeIn {
@@ -411,16 +454,10 @@
   }
 }
 
-.card {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-/* Chart Tooltip Custom Styling */
 .recharts-tooltip-wrapper {
   outline: none;
 }
 
-/* Additional Utility Classes */
 .gap-3 {
   gap: 1rem;
 }
@@ -464,24 +501,6 @@
   box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
   outline: none;
   color: #ffffff;
-}
-
-@media (max-width: 725px) {
-  .news-card h5 {
-    font-size: clamp(1rem, 2.5vw, 1.5rem);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block;
-    min-width: 280px;
-    max-width: 280px;
-  }
-  .news-card .badge,
-  .brain-icon,
-  .news-indicator,
-  small {
-    display: none;
-  }
 }
 
 /* Custom Modal Styling */
@@ -561,7 +580,6 @@
   padding-bottom: 0;
 }
 
-/* Expand Animation */
 @keyframes expandIn {
   from {
     opacity: 0;

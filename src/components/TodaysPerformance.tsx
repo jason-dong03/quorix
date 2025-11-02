@@ -1,15 +1,22 @@
 import { TrendingUp } from "lucide-react";
+import {
+  getPortfolioTodayGain,
+  getPortfolioTodayGainPct,
+  getPortfolioTotalValue,
+} from "../data/dashboardCalculationFunctions";
+import type { Holding, WatchlistStock } from "../types";
 
 interface TodaysPerformanceProps {
-  todayGain?: number;
-  todayGainPercent?: number;
-  totalValue?: number;
+  holdings: Holding[];
+  stocks_dict: WatchlistStock[];
 }
 export const TodaysPerformance: React.FC<TodaysPerformanceProps> = ({
-  todayGain = 0,
-  todayGainPercent = 0,
-  totalValue = 0,
+  holdings,
+  stocks_dict,
 }) => {
+  const totalValue = getPortfolioTotalValue(holdings, stocks_dict);
+  const todayGain = getPortfolioTodayGain(holdings, stocks_dict);
+  const todayGainPercent = getPortfolioTodayGainPct(holdings, stocks_dict);
   return (
     <>
       <div className="card stats-card stats-card-success mb-4">
@@ -20,19 +27,38 @@ export const TodaysPerformance: React.FC<TodaysPerformanceProps> = ({
           </div>
           <div className="mb-3">
             <small className="text-muted d-block mb-1">Gain</small>
-            <h2 className="text-success mb-0">
-              +${todayGain.toLocaleString()}
+            <h2
+              className={`${
+                todayGain > 0 ? "text-success" : "text-danger"
+              } mb-0`}
+            >
+              {todayGain > 0 ? "+" : "-"}$
+              {Math.abs(todayGain).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </h2>
           </div>
           <div className="mb-3">
             <small className="text-muted d-block mb-1">Percentage</small>
-            <h2 className="text-success mb-0">+{todayGainPercent}%</h2>
+            <h2
+              className={`${
+                todayGainPercent > 0 ? "text-success" : "text-danger"
+              } mb-0`}
+            >
+              {todayGainPercent > 0 ? "+" : ""}{" "}
+              {Number(todayGainPercent).toFixed(2)}%
+            </h2>
           </div>
           <hr />
           <div>
             <small className="text-muted d-block mb-1">Opening Value</small>
             <h5 className="mb-0">
-              ${(totalValue - todayGain).toLocaleString()}
+              $
+              {Math.abs(totalValue - todayGain).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </h5>
           </div>
         </div>

@@ -27,4 +27,4 @@ app.listen(4000, () => {
   insertEODData();
 });
 
-startPriceUpdater();
+//startPriceUpdater();

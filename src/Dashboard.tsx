@@ -17,6 +17,7 @@ import { Insights } from "./components/Insights.tsx";
 import { QuickActions } from "./components/QuickActions.tsx";
 import {
   addStockToWatchlist,
+  deleteStockFromWatchlist,
   useFetchHoldingsData,
   useFetchStockData,
   useFetchWatchlistData,
@@ -45,6 +46,7 @@ const Dashboard: React.FC = () => {
     setTimeout(() => setShowAlert(false), 5000);
   };
 
+  const [risk_score, setRiskScore] = useState(0);
   const [timeframe, setTimeframe] = useState<string>("1D");
   const [holdingsTab, setHoldingsTab] = useState<HoldingsTab>("holdings");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -68,6 +70,14 @@ const Dashboard: React.FC = () => {
       alert("failed to add to stock");
     }
   };
+  const handleDeleteWatchlist = async (symbol: string) => {
+    try {
+      await deleteStockFromWatchlist(symbol);
+      refetchWatchList();
+    } catch (error) {
+      alert("failed to delete stock");
+    }
+  };
   const filteredStocks = availableStocks
     .map((s) => {
       const isInWatchlist = watchlistStocks.some((w) => w.symbol === s.symbol);
@@ -86,10 +96,6 @@ const Dashboard: React.FC = () => {
         stock.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-  const totalValue = 42195.4;
-  const todayGain = 1247.83;
-  const todayGainPercent = 3.05;
-
   return (
     <>
       {showAlert && (
@@ -99,15 +105,14 @@ const Dashboard: React.FC = () => {
       )}
       <Modal stock={selectedStock} onSuccess={handleSuccess} />
       <div className="portfolio-wrapper">
-        <Navbar />
+        <Navbar risk_score={risk_score} />
         <div className="container-fluid p-4">
           <AINewsBar />
           <div className="row g-4">
             <div className="col-lg-9">
               <PortfolioHeader
-                totalValue={totalValue}
-                todayGain={todayGain}
-                todayGainPercent={todayGainPercent}
+                holdings={holdingStocks}
+                stock_dict={availableStocks}
                 timeframe={timeframe}
                 setTimeframe={setTimeframe}
               />
@@ -128,7 +133,10 @@ const Dashboard: React.FC = () => {
                     {holdingsTab === "holdings" ? (
                       <PortfolioHoldingList portfolio={holdingStocks} />
                     ) : holdingsTab === "watchlist" ? (
-                      <PortfolioWatchlist watchlist={watchlistStocks} />
+                      <PortfolioWatchlist
+                        watchlist={watchlistStocks}
+                        onDeleteClick={handleDeleteWatchlist}
+                      />
                     ) : (
                       <PortfolioAddStockList
                         filteredStocks={filteredStocks}
@@ -143,12 +151,18 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="col-lg-3">
               <TodaysPerformance
-                totalValue={totalValue}
-                todayGain={todayGain}
-                todayGainPercent={todayGainPercent}
+                holdings={holdingStocks}
+                stocks_dict={availableStocks}
               />
-              <PortfolioStats />
-              <Insights />
+              <PortfolioStats
+                holdings={holdingStocks}
+                stocks_dict={availableStocks}
+              />
+              <Insights
+                holdings={holdingStocks}
+                stocks_dict={availableStocks}
+                updateRiskScore={setRiskScore}
+              />
               <QuickActions />
             </div>
           </div>

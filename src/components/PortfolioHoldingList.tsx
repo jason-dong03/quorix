@@ -59,7 +59,7 @@ export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({
         const totalCost =
           (stock as any).totalCost ??
           Number(stock.bought_at) * Number(stock.shares);
-        const gainLoss = marketValue - totalCost;
+        const gainLoss = Math.round(Number(marketValue - totalCost)).toFixed(2);
         const gainLossPercent =
           totalCost > 0 ? (gainLoss / totalCost) * 100 : 0;
         const hasMultipleLots = stock.lots && stock.lots.length > 1;
@@ -181,11 +181,11 @@ export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({
                           <span className="text-muted">Gain/Loss:</span>
                           <span
                             className={`fw-semibold ${
-                              gainLoss >= 0 ? "text-success" : "text-danger"
+                              Number(gainLoss) > 0 ? "text-success" : Number(gainLoss) === 0 ? "text-white" :"text-danger"
                             }`}
                           >
-                            {gainLoss >= 0 ? "+" : "-"}$
-                            {Math.abs(gainLoss).toLocaleString("en-US", {
+                            {Number(gainLoss) > 0 ? "+" : Number(gainLoss) === 0? "":"-"}$
+                            {Math.abs(Number(gainLoss)).toLocaleString("en-US", {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })}

@@ -1,9 +1,14 @@
 import React from "react";
 import { Menu, User, PieChart } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
+import { getRiskScoreLabel } from "../data/insightsData";
 
-const NavBar: React.FC = () => {
+interface NavBarProps {
+  risk_score: number;
+}
+const NavBar: React.FC<NavBarProps> = ({ risk_score }) => {
   const { user } = useAuth();
+  const risk_score_label = getRiskScoreLabel(Number(risk_score));
 
   if (!user) return null;
   return (
@@ -82,7 +87,17 @@ const NavBar: React.FC = () => {
                 className="small text-secondary"
                 style={{ fontSize: "0.75rem" }}
               >
-                Risk: 7.8 / 10
+                Risk:{" "}
+                <span
+                  className={`${
+                    risk_score_label === "High Risk"
+                      ? "text-danger"
+                      : "text-secondary"
+                  }`}
+                >
+                {risk_score}
+                </span>{" "}
+                / 10
               </div>
             </div>
 

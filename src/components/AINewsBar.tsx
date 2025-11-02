@@ -46,7 +46,7 @@ function AINewsBar() {
                       className={`badge ${
                         currentNews.impact === "positive"
                           ? "bg-success"
-                          : "bg-danger"
+                          : "bg-danger-badge"
                       }`}
                     >
                       {currentNews.ticker}
@@ -112,7 +112,7 @@ function AINewsBar() {
                             className={`badge ${
                               news.impact === "positive"
                                 ? "bg-success"
-                                : "bg-danger"
+                                : "bg-danger-badge"
                             }`}
                           >
                             {news.ticker}

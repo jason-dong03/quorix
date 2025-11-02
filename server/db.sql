@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE tickers(
     symbol TEXT UNIQUE NOT NULL,
+    sector TEXT NOT NULL,
     name TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS holdings (

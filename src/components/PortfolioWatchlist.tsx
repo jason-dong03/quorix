@@ -2,10 +2,12 @@ import { TrendingDown, TrendingUp } from "lucide-react";
 import type { WatchlistStock } from "../types";
 
 interface PortfolioWatchlistProps {
+  onDeleteClick: (symbol: string) => Promise<void>;
   watchlist: WatchlistStock[];
 }
 export const PortfolioWatchlist: React.FC<PortfolioWatchlistProps> = ({
   watchlist,
+  onDeleteClick,
 }) => {
   return (
     <>
@@ -52,6 +54,14 @@ export const PortfolioWatchlist: React.FC<PortfolioWatchlistProps> = ({
                       {stock.last_change_pct}%
                     </span>
                   </div>
+                </div>
+                <div className="d-flex justify-content-center align-items-center ps-4 p-0">
+                  <button
+                    className="btn-remove-watchlist-glass"
+                    onClick={() => onDeleteClick(stock.symbol)}
+                  >
+                    Remove
+                  </button>
                 </div>
               </div>
             </div>

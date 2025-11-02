@@ -34,6 +34,7 @@ export async function upsertQuotes(quotes) {
 export async function fetchLatestMarketData() {
   const sql = `SELECT 
   t.name,
+  t.sector,
   m.symbol,
   m.last_price,
   m.last_change_pct,
@@ -83,7 +84,7 @@ export async function fetchUserHoldings(userId) {
   return res.rows;
 }
 
-export async function updateUserHoldings(
+export async function addStockToUserHolding(
   userID,
   symbol,
   bought_at,
@@ -97,10 +98,16 @@ export async function updateUserHoldings(
   );
 }
 
-export async function updateUserWatchlist(userID, symbol) {
+export async function addStockToUserWatchlist(userID, symbol) {
   await query(
     `INSERT INTO watchlist (user_id, symbol)
    VALUES ($1, $2);`,
     [userID, symbol]
   );
+}
+export async function deleteStockFromUserWatchlist(userID, symbol) {
+  await query(`DELETE FROM watchlist WHERE user_id = $1 AND symbol = $2`, [
+    userID,
+    symbol,
+  ]);
 }

@@ -13,6 +13,7 @@ export interface Holding {
 
 export interface WatchlistStock {
   symbol: string;
+  sector: string;
   name: string;
   last_price: number;
   last_change_pct: number;

@@ -1,6 +1,36 @@
 import { Brain } from "lucide-react";
+import {
+  herfindahlIndex,
+  numHoldingsRisk,
+  sectorConcentration,
+  getRiskScoreLabel,
+  getDiversificationPercentage,
+  getDiversificationPercentageColor,
+} from "../data/insightsData";
+import type { Holding, WatchlistStock } from "../types";
 
-export const Insights: React.FC = () => {
+interface InsightsProp {
+  holdings: Holding[];
+  stocks_dict: WatchlistStock[];
+  updateRiskScore: React.Dispatch<React.SetStateAction<number>>;
+}
+export const Insights: React.FC<InsightsProp> = ({
+  holdings,
+  stocks_dict,
+  updateRiskScore,
+}) => {
+  const HI = herfindahlIndex(holdings, stocks_dict) * 10;
+  const sectorScore = sectorConcentration(holdings, stocks_dict) * 10;
+  const holdingRiskNum = numHoldingsRisk(holdings);
+
+  const diversification = getDiversificationPercentage(holdings, stocks_dict);
+  const diversification_color =
+    getDiversificationPercentageColor(diversification);
+  const risk_score = Number(
+    HI * 0.35 + sectorScore * 0.35 + holdingRiskNum * 0.3
+  ).toFixed(1);
+  updateRiskScore(Number(risk_score));
+  const risk_score_label = getRiskScoreLabel(Number(risk_score));
   return (
     <>
       <div className="card stats-card stats-card-ai mb-4">
@@ -12,22 +42,39 @@ export const Insights: React.FC = () => {
           <div className="mb-3">
             <small className="text-muted d-block mb-2">Risk Score</small>
             <div className="d-flex align-items-end gap-2">
-              <h2 className="text-primary mb-0">7.8</h2>
+              <h2
+                className={`${
+                  risk_score_label === "High Risk"
+                    ? "text-danger"
+                    : "text-primary"
+                } mb-0`}
+              >
+                {risk_score}
+              </h2>
               <small className="text-muted mb-1">/10</small>
             </div>
-            <small className="text-muted">Moderate-High Risk</small>
+            <small
+              className={
+                risk_score_label === "High Risk" ? "text-danger" : "text-muted"
+              }
+            >
+              {risk_score_label} !
+            </small>
           </div>
           <hr />
           <div>
             <small className="text-muted d-block mb-2">Diversification</small>
-            <h2 className="text-warning mb-2">72%</h2>
+            <h2 className={`${diversification_color[1]} mb-2`}>
+              {diversification}%
+            </h2>
             <div className="progress" style={{ height: "8px" }}>
               <div
-                className="progress-bar bg-warning"
-                style={{ width: "72%" }}
+                className={`progress-bar ${diversification_color[0]}
+                `}
+                style={{ width: `${diversification}%` }}
               ></div>
             </div>
-            <small className="text-warning d-block mt-2">
+            <small className={`${diversification_color[1]} d-block mt-2`}>
               Consider adding defensive sectors
             </small>
           </div>

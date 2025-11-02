@@ -88,3 +88,13 @@ export async function addStockToWatchlist(stock: WatchlistStock) {
   //console.log(result);
   return result.success;
 }
+
+export async function deleteStockFromWatchlist(symbol: string) {
+  const res = await fetch(`http://localhost:4000/api/watchlist/${symbol}`, {
+    method: "DELETE",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  });
+  const result = await res.json();
+  return result.success;
+}
