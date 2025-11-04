@@ -7,6 +7,7 @@ import {
   addStockToUserHolding,
   addStockToUserWatchlist,
   deleteStockFromUserWatchlist,
+  deleteStockFromUserHolding
 } from "../models/marketDataModel.js";
 const router = express.Router();
 
@@ -92,6 +93,23 @@ router.delete("/api/watchlist/:symbol", async (req, res) => {
     await deleteStockFromUserWatchlist(decoded.uid, symbol);
     return res.status(200).json({ success: true });
   } catch (err) {
+    console.error("delete stock error:", err);
+    return res.status(500).json({ error: "Failed to delete stock" });
+  }
+});
+
+router.delete("/api/sell_holding", async(req,res)=>{
+  const token = req.cookies.session;
+  if(!token){
+    return res.status(401).json({error: "Not authenticated"});
+  }
+  try{  
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { s, sh, ba } = req.body;
+    await deleteStockFromUserHolding(decoded.uid, s, sh, ba);
+    return res.status(200).json({ success: true });
+
+  }catch(err){
     console.error("delete stock error:", err);
     return res.status(500).json({ error: "Failed to delete stock" });
   }

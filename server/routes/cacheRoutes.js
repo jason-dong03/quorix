@@ -4,37 +4,58 @@ import { getHistoricalPrices } from "../models/cacheModel.js";
 import { fetchUserHoldings } from "../models/marketDataModel.js";
 const router = express.Router();
 
-
-function nowEt() {
+function nowET() {
   return new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
 }
+
+function previousBusinessDayET(d) {
+  const out = new Date(d);
+  // move back one day until Mon–Fri
+  do { out.setDate(out.getDate() - 1); } while ([0,6].includes(out.getDay()));
+  return out;
+}
+
+function startOfSessionET(d) {
+  const s = new Date(d);
+  s.setHours(9, 30, 0, 0);           // 09:30 ET
+  return s;
+}
+
+function endOfSessionET(d) {
+  const e = new Date(d);
+  e.setHours(15, 55, 0, 0);          // 15:55 ET (your choice)
+  return e;
+}
+
 function toUtcIso(d) { return new Date(d.getTime()).toISOString(); }
 
 function buildRange(timeframe) {
-  const etNow = nowEt();
+  const etNow = nowET();
 
- if (timeframe === "1D") {
-    const etNow = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
-    const start = new Date(etNow);
-    start.setHours(9, 30, 0, 0);
+  if (timeframe === "1D") {
+    const sessionStart = startOfSessionET(etNow);
+    const sessionEnd   = endOfSessionET(etNow);
 
-    const end = new Date(etNow);
-    const marketClose = new Date(etNow);
-    marketClose.setHours(16, 0, 0, 0);
-
-    if (end > marketClose) end.setTime(marketClose.getTime());
-
-    return { startISO: toUtcIso(start), endISO: toUtcIso(end), apiTf: "5Min" };
+    if (etNow < sessionStart) {
+      const prev = previousBusinessDayET(etNow);
+      const s = startOfSessionET(prev);
+      const e = endOfSessionET(prev);
+      return { startISO: toUtcIso(s), endISO: toUtcIso(e), apiTf: "5Min" };
     }
 
+    if (etNow > sessionEnd) {
+      return { startISO: toUtcIso(sessionStart), endISO: toUtcIso(sessionEnd), apiTf: "5Min" };
+    }
+
+    return { startISO: toUtcIso(sessionStart), endISO: toUtcIso(etNow), apiTf: "5Min" };
+  }
+
   if (timeframe === "5D") {
-    const start = new Date(etNow);
-    start.setDate(start.getDate() - 7);
+    const start = new Date(etNow); start.setDate(start.getDate() - 7);
     return { startISO: toUtcIso(start), endISO: toUtcIso(etNow), apiTf: "1Hour" };
   }
 
-  const start = new Date(etNow);
-  start.setDate(start.getDate() - 35);
+  const start = new Date(etNow); start.setDate(start.getDate() - 35);
   return { startISO: toUtcIso(start), endISO: toUtcIso(etNow), apiTf: "1Day" };
 }
 router.get("/api/portfolio-history", async (req, res) => {
@@ -63,7 +84,7 @@ router.get("/api/portfolio-history", async (req, res) => {
     }
 
     const { startISO, endISO, apiTf } = buildRange(timeframe);
-    console.log(`📅 TF=${timeframe} API_TF=${apiTf} Range=${startISO} → ${endISO}`);
+    //console.log(`📅 TF=${timeframe} API_TF=${apiTf} Range=${startISO} → ${endISO}`);
 
     const priceHistories = await Promise.all(
       groupedHoldings.map(async (h) => {
@@ -75,7 +96,7 @@ router.get("/api/portfolio-history", async (req, res) => {
     );
 
     const portfolioHistory = calculatePortfolioValues(priceHistories, timeframe);
-    console.log("PORTFOLIO_HISTORY", JSON.stringify(portfolioHistory.slice(0, 5), null, 2));
+    //console.log("PORTFOLIO_HISTORY", JSON.stringify(portfolioHistory.slice(0, 5), null, 2));
     return res.json({ history: portfolioHistory });
   } catch (err) {
     console.error("❌ Portfolio history error:", err);

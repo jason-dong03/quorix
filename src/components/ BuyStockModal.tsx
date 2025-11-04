@@ -7,7 +7,7 @@ interface ModalProps {
   onSuccess: () => void;
 }
 
-export const Modal: React.FC<ModalProps> = ({ stock, onSuccess }) => {
+export const BuyStockModal: React.FC<ModalProps> = ({ stock, onSuccess }) => {
   const price = useMemo(() => Number(stock?.last_price ?? 0), [stock]);
   const [tab, setTab] = useState<"shares" | "amount">("shares");
   const [shares, setShares] = useState<number>(1);
@@ -177,4 +177,4 @@ export const Modal: React.FC<ModalProps> = ({ stock, onSuccess }) => {
   );
 };
 
-export default Modal;
+export default BuyStockModal;

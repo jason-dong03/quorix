@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./css/Dashboard.css";
-import type { HoldingsTab, WatchlistStock } from "./types.ts";
+import type { Holding, HoldingsTab, WatchlistStock } from "./types.ts";
 import AINewsBar from "./components/AINewsBar.tsx";
 import Navbar from "./components/NavBar.tsx";
 import { PortfolioHeader } from "./components/PortfolioHeader.tsx";
@@ -18,13 +18,14 @@ import { QuickActions } from "./components/QuickActions.tsx";
 import {
   addStockToWatchlist,
   deleteStockFromWatchlist,
+  sellHoldingStock,
   useFetchHoldingsData,
   useFetchStockData,
   useFetchWatchlistData,
 } from "./data/stockData.ts";
 import { useAuth } from "./auth/AuthContext.tsx";
 import { useNavigate } from "react-router-dom";
-import Modal from "./components/ BuyStockModal.tsx";
+import BuyStockModal from "./components/ BuyStockModal.tsx";
 
 const Dashboard: React.FC = () => {
   const { user, loading } = useAuth();
@@ -53,7 +54,7 @@ const Dashboard: React.FC = () => {
   const availableStocks = useFetchStockData();
   const { watchlistStocks: watchlistStocks, refetch: refetchWatchList } =
     useFetchWatchlistData();
-  const holdingStocks = useFetchHoldingsData();
+  const {holdings: holdingStocks, refetch: refetchHoldingList} = useFetchHoldingsData();
   const [selectedStock, setSelectedStock] = useState<WatchlistStock | null>(
     null
   );
@@ -78,6 +79,29 @@ const Dashboard: React.FC = () => {
       alert("failed to delete stock");
     }
   };
+  const handleSellAllStocksFromHolding = async (symbol: string, lots: Holding[]) => {
+  try {
+    console.log("deleting all lots from stock ", symbol);
+    await Promise.all(
+      lots.map(l => sellHoldingStock(symbol, l.shares, l.bought_at))
+    );
+    await refetchHoldingList();
+  } catch {
+    alert("failed to delete stock");
+  }
+};
+  const handleSellStockFromHolding = async(stock: Holding)=>{
+     try {
+      const s = stock.symbol;
+      const ba = stock.bought_at;
+      const sh = stock.shares;
+
+      await sellHoldingStock(s, sh, ba);
+      refetchHoldingList();
+    } catch (error) {
+      alert("failed to delete stock");
+    }
+  }
   const filteredStocks = availableStocks
     .map((s) => {
       const isInWatchlist = watchlistStocks.some((w) => w.symbol === s.symbol);
@@ -103,7 +127,7 @@ const Dashboard: React.FC = () => {
           Stock added successfully!
         </div>
       )}
-      <Modal stock={selectedStock} onSuccess={handleSuccess} />
+      <BuyStockModal stock={selectedStock} onSuccess={handleSuccess} />
       <div className="portfolio-wrapper">
         <Navbar risk_score={risk_score} />
         <div className="container-fluid p-4">
@@ -131,7 +155,12 @@ const Dashboard: React.FC = () => {
                   />
                   <div className="holdings-list">
                     {holdingsTab === "holdings" ? (
-                      <PortfolioHoldingList portfolio={holdingStocks} />
+                      <PortfolioHoldingList 
+                      portfolio={holdingStocks}
+                      onBuyClick={handleBuyClick}
+                      onSellClick={handleSellStockFromHolding}
+                      onRemovePosition={handleSellAllStocksFromHolding}
+                      modalID="#staticBackdrop" />
                     ) : holdingsTab === "watchlist" ? (
                       <PortfolioWatchlist
                         watchlist={watchlistStocks}

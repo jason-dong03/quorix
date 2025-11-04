@@ -13,7 +13,8 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
   const [error, setError] = useState<string | null>(null);
 
   const is1D = timeframe === "1D";
-
+  //NOT A TRUE GRAPH REFLECTING BUYS, FIX TO SHOW SPIKE TRENDS
+  //INCLUDE VOLATILITY TOO
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -21,7 +22,6 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
       try {
         const history = await fetchPortfolioHistory(timeframe);
         const transformed: ChartData[] = history.map((item: any) => ({
-          // backend returns { timestamp, date, value }
           timestamp: Number(item.timestamp) || new Date(item.date).getTime(),
           date: item.date,
           value: item.value,

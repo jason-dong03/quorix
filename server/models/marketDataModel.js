@@ -111,3 +111,10 @@ export async function deleteStockFromUserWatchlist(userID, symbol) {
     symbol,
   ]);
 }
+
+export async function deleteStockFromUserHolding(userID, s, sh, ba){
+  await query(`DELETE FROM holdings WHERE user_id = $1 
+    AND symbol = $2 
+    AND shares = $3 
+    AND bought_at = $4`,[userID, s, sh, ba]);
+}

@@ -1,20 +1,44 @@
 import { useState, useMemo } from "react";
 import { TrendingDown, TrendingUp, ChevronDown, ChevronUp } from "lucide-react";
-import type { Holding } from "../types";
+import type { Holding, WatchlistStock } from "../types";
 
 interface PortfolioHoldingListProps {
   portfolio: Holding[];
+  onBuyClick: (stock: WatchlistStock) => void;
+  onSellClick: (stock: Holding) => void;
+  onRemovePosition: (symbol: string, lots: Holding[]) => Promise<void>;
+  modalID?: string;
 }
 
 export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({
   portfolio,
+  onBuyClick,
+  onSellClick,
+  onRemovePosition,
+  modalID,
 }) => {
   const [expandedSymbol, setExpandedSymbol] = useState<string | null>(null);
 
   const toggleExpand = (symbol: string) => {
     setExpandedSymbol(expandedSymbol === symbol ? null : symbol);
   };
-
+  const toWatchlistStock = (h: Holding): WatchlistStock => ({
+  symbol: h.symbol,
+  name: h.name,
+  last_price: Number(h.last_price),
+  last_change_pct: Number(h.last_change_pct),
+  sector : ""
+  });
+  const handleBuyClick = (stock: WatchlistStock) => {
+    if (onBuyClick) {
+      onBuyClick(stock);
+    }
+  };
+  const handleSellClick = (stock:Holding) =>{
+    if(onSellClick){
+      onSellClick(stock);
+    }
+  }
   const uniqueHoldings = useMemo(() => {
     const grouped = portfolio.reduce(
       (acc: Record<string, Holding & { lots: Holding[] }>, holding) => {
@@ -62,7 +86,7 @@ export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({
         const gainLoss = Number(Math.round(Number(marketValue - totalCost)).toFixed(2));
         const gainLossPercent =
           totalCost > 0 ? (gainLoss / totalCost) * 100 : 0;
-        const hasMultipleLots = stock.lots && stock.lots.length > 1;
+       
 
         return (
           <div key={stock.symbol} className="card stock-card mb-3">
@@ -80,7 +104,7 @@ export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({
                     <div className="flex-grow-1">
                       <div className="d-flex align-items-center gap-3 mb-1">
                         <h5 className="mb-0">{stock.symbol}</h5>
-                        {hasMultipleLots && (
+                        { (
                           <span className="badge bg-secondary">
                             {stock.lots.length} lots
                           </span>
@@ -217,14 +241,14 @@ export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({
                         </div>
                       </div>
                     </div>
-                    {hasMultipleLots && (
+                    { (
                       <div className="col-12">
                         <div className="detail-card p-3">
                           <h6 className="text-muted mb-3">
                             Purchase Lots ({stock.lots.length})
                           </h6>
                           {stock.lots.map((lot, index) => {
-                            const lotCurrentValue = Number(lot.avg_cost);
+                            const lotCurrentValue = Number(lot.shares) * Number(stock.last_price);
                             const lotGainLoss =
                               (stock.last_price - lot.bought_at) * lot.shares;
 
@@ -232,7 +256,7 @@ export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({
                               ((stock.last_price - lot.bought_at) /
                                 lot.bought_at) *
                               100;
-
+                          
                             return (
                               <div key={index} className="lot-item mb-2">
                                 <div className="d-flex justify-content-between align-items-center">
@@ -252,16 +276,19 @@ export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({
                                         ${Number(lot.bought_at).toFixed(2)}
                                       </span>
                                       <span className="ps-2 text-muted">
-                                        (
+                                        (bought at: {" "}
                                         {stock.updated_at
-                                          ? new Date(
-                                              stock.updated_at
-                                            ).toLocaleString()
+                                          ? new Date(stock.updated_at).toLocaleTimeString("en-US", {
+                                              year: "numeric",
+                                              month: "short",
+                                              day: "numeric",
+                                              hour: "2-digit",
+                                              minute: "2-digit"
+                                          })
                                           : "N/A"}
                                         )
                                       </span>
-                                    </div>
-                                    <div></div>
+                                    </div>                               
                                   </div>
                                   <div className="text-end">
                                     <div className="fw-semibold">
@@ -272,17 +299,20 @@ export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({
                                       ${lotCurrentValue.toFixed(2)}
                                     </div>
                                     <small
-                                      className={`${
-                                        lotGainLoss >= 0
-                                          ? "text-success"
-                                          : "text-danger"
-                                      }`}
-                                    >
+                                      className={` ${lotGainLoss >= 0 ? "text-success" : "text-danger" }`} >
                                       {lotGainLoss >= 0 ? "+" : "-"}$
                                       {Math.abs(lotGainLoss).toFixed(2)} (
                                       {lotGainLossPct >= 0 ? "+" : ""}
                                       {lotGainLossPct.toFixed(2)}%)
                                     </small>
+                                    <div className="ms-3 d-inline">
+                                      <button
+                                        className="mt-2 btn btn-outline-danger btn-sm"
+                                        onClick={() => handleSellClick(stock)}     
+                                      >
+                                        Remove lot
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -297,11 +327,15 @@ export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({
                         <button className="btn btn-outline-secondary btn-sm">
                           View Chart
                         </button>
-                        <button className="btn btn-outline-primary btn-sm">
-                          Buy More
+                        <button className="btn btn-outline-primary btn-sm" 
+                          data-bs-toggle="modal"
+                          data-bs-target={modalID}
+                          onClick={()=>handleBuyClick(toWatchlistStock(stock))}>
+                          Add More
                         </button>
-                        <button className="btn btn-outline-danger btn-sm">
-                          Sell
+                        <button className="btn btn-outline-danger btn-sm"
+                        onClick={()=> onRemovePosition(stock.symbol, stock.lots)}>
+                          Remove
                         </button>
                       </div>
                     </div>

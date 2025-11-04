@@ -72,7 +72,7 @@ export const PortfolioWatchlist: React.FC<PortfolioWatchlistProps> = ({
                     data-bs-target={modalID}
                     onClick={() => handleBuyClick(stock)}
                   >
-                    Buy
+                    Add
                   </button>
                   <button
                     className="btn btn-remove btn-sm"
