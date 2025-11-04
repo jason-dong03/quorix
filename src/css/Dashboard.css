@@ -253,34 +253,22 @@
   background-color: rgba(37, 197, 58, 0.5);
   border-color: rgba(37, 197, 58, 0.5);
 }
-.btn-remove-watchlist-glass {
-  background: rgb(136, 30, 40);
-  border: 1px solid rgb(220, 53, 69);
-  color: #fff;
-  font-size: clamp(0.75rem, 1.3vw, 0.9rem);
-  border-radius: 5px;
-  padding: 0.3rem 0.8rem;
-  transition: all 0.25s ease;
-}
 
-.btn-remove-watchlist-glass:hover {
-  background: rgb(176, 35, 50); /* lighter crimson */
-  border-color: rgb(255, 85, 100);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(220, 53, 69, 0.35);
-}
-
-.btn-remove-watchlist-glass:active {
-  background: rgb(110, 25, 35); /* darker pressed tone */
-  border-color: rgb(200, 45, 60);
-  transform: scale(0.97);
-  box-shadow: 0 2px 6px rgba(220, 53, 69, 0.25);
-}
 .btn-watchlist:hover {
   background-color: rgba(37, 197, 58, 0.7);
 }
 .btn-secondary:hover {
   background-color: rgba(73, 80, 87, 0.7);
+}
+
+.btn-remove {
+  color:white;
+  background-color: rgba(197, 37, 37, 0.5);
+  border-color: rgba(197, 37, 37, 0.5);
+}
+
+.btn-remove:hover {
+  background-color: rgba(197, 37, 37, 0.7);
 }
 
 .btn-link {

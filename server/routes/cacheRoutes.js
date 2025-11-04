@@ -1,125 +1,147 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import {
-    getHistoricalPrices
-} from "../models/cacheModel.js";
-
-import {fetchUserHoldings} from "../models/marketDataModel.js";
+import { getHistoricalPrices } from "../models/cacheModel.js";
+import { fetchUserHoldings } from "../models/marketDataModel.js";
 const router = express.Router();
 
-router.get('/api/portfolio-history', async (req, res) =>{
-    const token = req.cookies.session;
-    if (!token) 
-        return res.status(404).json({ user: null });
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const userID = decoded.uid;
-        const {timeframe = '1D'} = req.query;
-        
-        const holdings = await fetchUserHoldings(userID);
-        //console.log("Holding recieved: ", holdings);
-        if (!holdings || holdings.length === 0) {
-            return res.status(404).json({ holdings: [] });
-        }
-         let numDays;
-        switch(timeframe) {
-            case '1D':
-                numDays = 1;
-                break;
-            case '5D':
-                numDays = 5;
-                break;      
-            default:
-                numDays = 30;
-        }
-        
-        let apiTimeframe;
-        if (numDays <= 1) {
-            apiTimeframe = '5Min';
-        } else if (numDays <= 5) {
-            apiTimeframe = '1Hour';
-        } else {
-            apiTimeframe = '1Day';
-        }
-        const today = new Date();
-        const dayOfWeek = today.getDay();
-        const daysToSubtract = dayOfWeek === 0 ? 2 : dayOfWeek === 6 ? 1 : 0;
-        const endDate = new Date(Date.now() - daysToSubtract * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        
-        const calendarDaysToGoBack = Math.ceil(numDays * 1.4) + daysToSubtract;
-        const startDate = new Date(Date.now() - calendarDaysToGoBack * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        //console.log(`📅 Timeframe: ${timeframe}, Days: ${numDays}, API Timeframe: ${apiTimeframe}, Range: ${startDate} to ${endDate}`);
-        
-        const priceHistories = await Promise.all(
-            holdings.map(async (h) =>{
-                console.log(`Fetching prices for ${h.symbol}...`);
-                const prices = await getHistoricalPrices(h.symbol, startDate,endDate, apiTimeframe);
-                return {symbol: h.symbol, shares: h.shares, prices: prices};
-            })
-        );
-        const portfolioHistory = calculatePortfolioValues(priceHistories);
-      
-        return res.json({ history: portfolioHistory });
-    
-    } catch (err) {
-      console.error('❌ Portfolio history error:');
-      console.error('Message:', err);
-      return res.status(500).json({ error: "Failed to fetch portfolio history" });
-    }
-});
-function calculatePortfolioValues(priceHistories) {
-    const validHistories = priceHistories.filter(stock => stock.prices && stock.prices.length > 0);
-    
-    if (validHistories.length === 0) {
-        console.warn('No valid price histories available');
-        return [];
-    }
 
-    // Collect all unique timestamps/dates
-    const allTimestamps = new Set();
-    validHistories.forEach(stock => {
-        stock.prices.forEach(price => {
-            // For intraday data, we need the full timestamp, not just date
-            // Alpaca returns timestamp in 't' field or date string
-            const timestamp = price.t || price.date;
-            allTimestamps.add(timestamp);
-        });
-    });
-    
-    const sortedTimestamps = Array.from(allTimestamps).sort();
-    
-    return sortedTimestamps.map(timestamp => {
-        let totalValue = 0;
-        
-        validHistories.forEach(stock => {
-            const priceAtTime = stock.prices.find(p => {
-                const priceTimestamp = p.t || p.date;
-                return priceTimestamp === timestamp;
-            });
-            
-            if (priceAtTime) {
-                const shares = parseFloat(stock.shares) || 0;
-                const close = parseFloat(priceAtTime.close) || 0;
-                totalValue += shares * close;
-            }
-        });
-        
-        // Format timestamp for display
-        const date = new Date(timestamp);
-        const dateStr = date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            hour: sortedTimestamps.length > 50 ? 'numeric' : undefined, // Show time for intraday
-            minute: sortedTimestamps.length > 50 ? '2-digit' : undefined
-        });
-        
-        return {
-            date: dateStr,
-            value: Math.round(totalValue * 100) / 100
-        };
-    });
+function nowEt() {
+  return new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
 }
+function toUtcIso(d) { return new Date(d.getTime()).toISOString(); }
 
+function buildRange(timeframe) {
+  const etNow = nowEt();
 
+ if (timeframe === "1D") {
+    const etNow = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
+    const start = new Date(etNow);
+    start.setHours(9, 30, 0, 0);
+
+    const end = new Date(etNow);
+    const marketClose = new Date(etNow);
+    marketClose.setHours(16, 0, 0, 0);
+
+    if (end > marketClose) end.setTime(marketClose.getTime());
+
+    return { startISO: toUtcIso(start), endISO: toUtcIso(end), apiTf: "5Min" };
+    }
+
+  if (timeframe === "5D") {
+    const start = new Date(etNow);
+    start.setDate(start.getDate() - 7);
+    return { startISO: toUtcIso(start), endISO: toUtcIso(etNow), apiTf: "1Hour" };
+  }
+
+  const start = new Date(etNow);
+  start.setDate(start.getDate() - 35);
+  return { startISO: toUtcIso(start), endISO: toUtcIso(etNow), apiTf: "1Day" };
+}
+router.get("/api/portfolio-history", async (req, res) => {
+  const token = req.cookies.session;
+  if (!token) return res.status(404).json({ user: null });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userID = decoded.uid;
+    const { timeframe = "1M" } = req.query;
+
+    const holdings = await fetchUserHoldings(userID);
+
+    const groupedHoldings = Object.values(
+      holdings.reduce((acc, h) => {
+        if (!acc[h.symbol]) acc[h.symbol] = { ...h, shares: 0 };
+        acc[h.symbol].shares = (
+          parseFloat(acc[h.symbol].shares) + parseFloat(h.shares)
+        ).toString();
+        return acc;
+      }, {})
+    );
+
+    if (!groupedHoldings.length) {
+      return res.status(404).json({ groupedHoldings: [] });
+    }
+
+    const { startISO, endISO, apiTf } = buildRange(timeframe);
+    console.log(`📅 TF=${timeframe} API_TF=${apiTf} Range=${startISO} → ${endISO}`);
+
+    const priceHistories = await Promise.all(
+      groupedHoldings.map(async (h) => {
+        console.log(`Fetching ${h.symbol} x ${h.shares} ...`);
+        // IMPORTANT: pass datetime ISO strings, not date-only
+        const prices = await getHistoricalPrices(h.symbol, startISO, endISO, apiTf);
+        return { symbol: h.symbol, shares: h.shares, prices };
+      })
+    );
+
+    const portfolioHistory = calculatePortfolioValues(priceHistories, timeframe);
+    console.log("PORTFOLIO_HISTORY", JSON.stringify(portfolioHistory.slice(0, 5), null, 2));
+    return res.json({ history: portfolioHistory });
+  } catch (err) {
+    console.error("❌ Portfolio history error:", err);
+    return res.status(500).json({ error: "Failed to fetch portfolio history" });
+  }
+});
+
+function calculatePortfolioValues(priceHistories, mode = "1D") {
+  const valid = (priceHistories || []).filter((s) => s?.prices?.length > 0);
+  if (!valid.length) return [];
+
+  if (mode === "1D") {
+    // intraday: sum by raw bar timestamp (no normalization)
+    const buckets = new Map(); // ts(ms) -> total
+    for (const stock of valid) {
+      const shares = parseFloat(stock.shares) || 0;
+      if (shares <= 0) continue;
+      for (const p of stock.prices) {
+        const tsRaw = p.t || p.date; if (!tsRaw) continue;
+        const close = +p.close; if (!Number.isFinite(close)) continue;
+        const ts = new Date(tsRaw).getTime();
+        buckets.set(ts, (buckets.get(ts) || 0) + shares * close);
+      }
+    }
+    const keys = Array.from(buckets.keys()).sort((a, b) => a - b);
+    return keys.map((ms) => ({
+      timestamp: ms,
+      date: new Date(ms).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+      value: Math.round(buckets.get(ms) * 100) / 100,
+    }));
+  }
+
+  // 5D / 1M: use LAST bar of each UTC day per symbol, then sum
+  const perSymDay = new Map(); // symbol -> Map<dayMsUTC, { ts, close }>
+  for (const stock of valid) {
+    const shares = parseFloat(stock.shares) || 0;
+    if (shares <= 0) continue;
+    const dayMap = new Map();
+    for (const p of stock.prices) {
+      const tsRaw = p.t || p.date; if (!tsRaw) continue;
+      const close = +p.close; if (!Number.isFinite(close)) continue;
+      const ts = new Date(tsRaw).getTime();
+      const d = new Date(ts); d.setUTCHours(0, 0, 0, 0);
+      const dayKey = d.getTime();
+      const prev = dayMap.get(dayKey);
+      if (!prev || ts > prev.ts) dayMap.set(dayKey, { ts, close });
+    }
+    perSymDay.set(stock.symbol || Symbol(), { shares, dayMap });
+  }
+
+  const allDays = new Set();
+  for (const { dayMap } of perSymDay.values()) for (const k of dayMap.keys()) allDays.add(k);
+  const days = Array.from(allDays).sort((a, b) => a - b);
+
+  return days.map((dayMs) => {
+    let total = 0;
+    for (const { shares, dayMap } of perSymDay.values()) {
+      const rec = dayMap.get(dayMs);
+      if (rec) total += shares * rec.close;
+    }
+    return {
+      timestamp: dayMs,
+      date: new Date(dayMs).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      value: Math.round(total * 100) / 100,
+    };
+  });
+}
 
 export default router;

@@ -4,11 +4,20 @@ import type { WatchlistStock } from "../types";
 interface PortfolioWatchlistProps {
   onDeleteClick: (symbol: string) => Promise<void>;
   watchlist: WatchlistStock[];
+  onBuyClick?: (stock: WatchlistStock) => void;
+  modalID?: string;
 }
 export const PortfolioWatchlist: React.FC<PortfolioWatchlistProps> = ({
   watchlist,
   onDeleteClick,
+  onBuyClick,
+  modalID,
 }) => {
+  const handleBuyClick = (stock: WatchlistStock) => {
+    if (onBuyClick) {
+      onBuyClick(stock);
+    }
+  };
   return (
     <>
       {watchlist.map((stock) => {
@@ -55,9 +64,18 @@ export const PortfolioWatchlist: React.FC<PortfolioWatchlistProps> = ({
                     </span>
                   </div>
                 </div>
-                <div className="d-flex justify-content-center align-items-center ps-4 p-0">
+                <div className="d-flex flex-row justify-content-center align-items-center ps-3 gap-2">
                   <button
-                    className="btn-remove-watchlist-glass"
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target={modalID}
+                    onClick={() => handleBuyClick(stock)}
+                  >
+                    Buy
+                  </button>
+                  <button
+                    className="btn btn-remove btn-sm"
                     onClick={() => onDeleteClick(stock.symbol)}
                   >
                     Remove

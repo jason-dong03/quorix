@@ -29,6 +29,7 @@ export interface NewsItem {
 }
 
 export interface ChartData {
+  timestamp?: number;
   date: string;
   value: number;
 }

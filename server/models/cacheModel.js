@@ -8,7 +8,7 @@ dotenv.config();
 
 export async function getHistoricalPrices(symbol, startDate, endDate, timeframe = '1Day'){
     if (timeframe !== '1Day') {
-       // console.log(`⚡ Fetching intraday data for ${symbol} (${timeframe}) - bypassing cache`);
+        console.log(`⚡ Fetching intraday data for ${symbol} (${timeframe}) - bypassing cache`);
         try {
             return await fetchFromAlpaca(symbol, startDate, endDate, timeframe);
         } catch (error) {
@@ -20,21 +20,15 @@ export async function getHistoricalPrices(symbol, startDate, endDate, timeframe 
     const cachedPrices = await query(`SELECT date, close, open, high, low, volume
     FROM price_cache WHERE symbol = $1 AND date >= $2 AND date <= $3
     AND EXTRACT(DOW FROM date) NOT IN (0,6) ORDER BY date ASC`, [symbol, startDate,endDate]);
-
-
     const cachedDates = new Set(cachedPrices.rows.map(row => row.date.toISOString().split('T')[0]));
     const missingDates = getMissingTradingDays(startDate,endDate, cachedDates);
 
-    const today = new Date().toISOString().split('T')[0];
-    const now = new Date();
-    const isAfterMarketClose = now.getHours() >= 16; 
-    const isTodayMissing = !cachedDates.has(today) && isAfterMarketClose;
+    const totalExpected = getMissingTradingDays(startDate, endDate, new Set()).length;
 
-    if (isTodayMissing && missingDates.length === 0) {
-        missingDates.push(today);
-    }
-    if(cachedDates.size >0 && missingDates.length === 0){ 
-        console.log("no missing dates, returning cache data");
+    console.log(`${symbol}: cached=${cachedPrices.rows.length}, missing=${missingDates.length}, expected=${totalExpected}, threshold=${totalExpected * 0.2}`);
+
+    if (missingDates.length <= totalExpected * 0.2 && cachedPrices.rows.length > 0) {
+        console.log(`✓ Cache HIT for ${symbol}: ${cachedPrices.rows.length} prices (ignoring ${missingDates.length} missing Fridays)`);
         return cachedPrices.rows;
     }
     console.log(`⚠ Cache MISS for ${symbol}: fetching from Alpaca`); 

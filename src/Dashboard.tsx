@@ -136,6 +136,8 @@ const Dashboard: React.FC = () => {
                       <PortfolioWatchlist
                         watchlist={watchlistStocks}
                         onDeleteClick={handleDeleteWatchlist}
+                        modalID="#staticBackdrop"
+                        onBuyClick={handleBuyClick}
                       />
                     ) : (
                       <PortfolioAddStockList
