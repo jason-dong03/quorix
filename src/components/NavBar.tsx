@@ -29,7 +29,7 @@ const NavBar: React.FC<NavBarProps> = ({ risk_score }) => {
           className="navbar-brand d-flex align-items-center fw-semibold"
           href="#"
         >
-          <PieChart size={20} className="me-2 text-primary" />
+          <img src="/logo.png" className="text-primary nav-bar-logo"/>
           <span>quorix+</span>
         </a>
 
@@ -44,8 +44,6 @@ const NavBar: React.FC<NavBarProps> = ({ risk_score }) => {
         >
           <Menu size={24} />
         </button>
-
-        {/* Collapsible content */}
         <div className="collapse navbar-collapse" id="mainNav">
           {/* Center: Nav links */}
           <ul className="navbar-nav mx-lg-auto my-3 my-lg-0 gap-lg-3">

@@ -44,19 +44,18 @@ export const PortfolioHeader: React.FC<PortfolioHeaderProps> = ({
               <div className="d-flex align-items-center gap-3">
                 <div
                   className={`d-flex align-items-center ${
-                    todayGain > 0 ? "text-success" : "text-danger"
+                    todayGain > 0 ? "text-success" : todayGain ===0? "text-muted": "text-danger"
                   } fs-4`}
                 >
                   {todayGain > 0 ? (
                     <>
-                      {" "}
                       <TrendingUp size={24} className="me-2" />
                     </>
-                  ) : (
+                  ) : todayGain === 0? (<></>) : (
                     <TrendingDown size={24} className="me-2" />
                   )}
                   <span className="fw-semibold">
-                    {todayGain > 0 ? "+" : "-"}$
+                    {todayGain > 0 ? "+" : todayGain ===0? "" :"-"}$
                     {Math.abs(todayGain).toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
@@ -65,11 +64,12 @@ export const PortfolioHeader: React.FC<PortfolioHeaderProps> = ({
                 </div>
                 <span
                   className={`${
-                    todayGainPct > 0 ? "text-success" : "text-danger"
+                    todayGainPct > 0 ? "text-success" : Number.isNaN(todayGainPct)? "text-muted" :"text-danger"
                   } fs-4 fw-semibold`}
                 >
                   {todayGainPct > 0 ? "+" : ""}
-                  {Number(todayGainPct).toFixed(2)}%
+                 {(Number.isFinite(Number(todayGainPct)) ? todayGainPct.toLocaleString(
+                  undefined,{minimumFractionDigits: 2,maximumFractionDigits: 2,}) : 0)}%
                 </span>
                 <small className="text-muted">Today</small>
               </div>

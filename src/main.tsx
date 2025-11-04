@@ -1,4 +1,4 @@
-import React from "react";
+
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
@@ -9,7 +9,6 @@ import Dashboard from "./Dashboard.tsx";
 import ProtectedRoute from "./auth/ProtectedRoute";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
     <BrowserRouter>
       <AuthProvider>
         <Routes>
@@ -26,5 +25,4 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         </Routes>
       </AuthProvider>
     </BrowserRouter>
-  </React.StrictMode>
 );

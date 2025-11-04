@@ -9,6 +9,7 @@ import {
   YAxis,
 } from "recharts";
 import type { ChartData } from "../types";
+import { fetchPortfolioHistory } from "../data/cacheData";
 
 interface PortfolioGraphProps {
   timeframe: string;
@@ -17,42 +18,78 @@ interface PortfolioGraphProps {
 export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({
   timeframe,
 }) => {
-  const generateChartData = (days: number): ChartData[] => {
-    const data: ChartData[] = [];
-    const baseValue = 42195.4;
-    let currentValue = baseValue;
-
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const volatility = 0.012;
-      const trend = 0.0006;
-      const change = (Math.random() - 0.48) * volatility + trend;
-      currentValue = currentValue * (1 + change);
-
-      data.push({
-        date:
-          days === 1
-            ? date.toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : date.toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-              }),
-        value: Math.round(currentValue * 100) / 100,
-      });
-    }
-    return data;
-  };
-
-  const [chartData, setChartData] = useState<ChartData[]>(generateChartData(1));
-
+  const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  
   useEffect(() => {
-    const days = timeframe === "1D" ? 1 : timeframe === "5D" ? 5 : 30;
-    setChartData(generateChartData(days));
+    console.log('🔄 Effect triggered! Timeframe:', timeframe);
+    const loadPortfolioHistory = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const history = await fetchPortfolioHistory(timeframe);
+        const transformedData: ChartData[] = history.map((item) => ({
+          date: item.date,
+          value: item.value,
+        }));
+
+        setChartData(transformedData);
+      } catch (err) {
+        console.error("Failed to load portfolio history:", err);
+        setError("Failed to load portfolio data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPortfolioHistory();
   }, [timeframe]);
+
+  if (loading) {
+    return (
+      <div className="card chart-card mb-4">
+        <div className="card-body p-4">
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p className="text-muted mt-3">Loading portfolio data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="card chart-card mb-4">
+        <div className="card-body p-4">
+          <div className="alert alert-danger" role="alert">
+            {error}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (chartData.length === 0) {
+    return (
+      <div className="card chart-card mb-4">
+        <div className="card-body p-4">
+          <div className="alert alert-info" role="alert">
+            No portfolio data available
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Determine if we should show fewer ticks for intraday data
+  const isIntraday = chartData.length > 20;
+  const tickInterval = isIntraday ? Math.floor(chartData.length / 8) : 0; // Show ~8 ticks for intraday
+
   return (
     <>
       <div className="card chart-card mb-4">
@@ -75,6 +112,10 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({
                 stroke="#6c757d"
                 style={{ fontSize: "12px" }}
                 tick={{ fill: "#6c757d" }}
+                interval={tickInterval}
+                angle={isIntraday ? -45 : 0}
+                textAnchor={isIntraday ? "end" : "middle"}
+                height={isIntraday ? 80 : 30}
               />
               <YAxis
                 stroke="#6c757d"

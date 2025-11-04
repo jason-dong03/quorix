@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS watchlist CASCADE;
 DROP TABLE IF EXISTS prices CASCADE;
 DROP TABLE IF EXISTS market_data_updates CASCADE;
 DROP TABLE IF EXISTS tickers CASCADE;
+DROP TABLE IF EXISTS price_cache CASCADE;
 
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
@@ -27,7 +28,7 @@ CREATE TABLE IF NOT EXISTS holdings (
   shares NUMERIC(18,6) NOT NULL,
   bought_at NUMERIC(18, 4) NOT NULL,
   avg_cost NUMERIC(18,4) NOT NULL,
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_holdings_user ON holdings(user_id);
@@ -59,9 +60,23 @@ CREATE TABLE IF NOT EXISTS market_data_updates (
   last_updated TIMESTAMPTZ DEFAULT NOW(),
   source TEXT
 );
+CREATE TABLE price_cache (
+  id SERIAL PRIMARY KEY,
+  symbol TEXT NOT NULL,
+  date DATE NOT NULL,
+  open NUMERIC(10,2),
+  high NUMERIC(10,2),
+  low NUMERIC(10,2),
+  close NUMERIC(10,2),
+  volume BIGINT,
+  cached_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(symbol, date)
+);
+CREATE INDEX idx_price_cache_symbol_date ON price_cache(symbol, date DESC);
 ALTER TABLE users OWNER TO ppf3jn;
 ALTER TABLE holdings OWNER TO ppf3jn;
 ALTER TABLE watchlist OWNER TO ppf3jn;
 ALTER TABLE tickers OWNER TO ppf3jn;
 ALTER TABLE prices OWNER TO ppf3jn;
 ALTER TABLE market_data_updates OWNER TO ppf3jn;
+ALTER TABLE price_cache OWNER TO ppf3jn;

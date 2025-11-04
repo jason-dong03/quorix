@@ -59,7 +59,7 @@ export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({
         const totalCost =
           (stock as any).totalCost ??
           Number(stock.bought_at) * Number(stock.shares);
-        const gainLoss = Math.round(Number(marketValue - totalCost)).toFixed(2);
+        const gainLoss = Number(Math.round(Number(marketValue - totalCost)).toFixed(2));
         const gainLossPercent =
           totalCost > 0 ? (gainLoss / totalCost) * 100 : 0;
         const hasMultipleLots = stock.lots && stock.lots.length > 1;

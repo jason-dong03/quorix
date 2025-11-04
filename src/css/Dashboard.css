@@ -592,3 +592,7 @@
     transform: translateY(0);
   }
 }
+.nav-bar-logo{
+  width: 60px;
+  height: 60px;
+}

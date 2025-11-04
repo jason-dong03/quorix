@@ -37,10 +37,10 @@ export const PortfolioStats: React.FC<PortfolioStats> = ({
             <small className="text-muted">Total Return</small>
             <span
               className={`fw-semibold ${
-                totalReturn > 0 ? "text-success" : "text-danger"
+                totalReturn > 0 ? "text-success" : totalReturn ===0? "text-muted":"text-danger"
               }`}
             >
-              {totalReturn > 0 ? "+" : "-"}$
+              {totalReturn > 0 ? "+" : totalReturn ===0? "" : "-"}$
               {Math.abs(Number(totalReturn)).toFixed(2)}
             </span>
           </div>
@@ -48,10 +48,13 @@ export const PortfolioStats: React.FC<PortfolioStats> = ({
             <small className="text-muted">Return %</small>
             <span
               className={`fw-semibold ${
-                totalReturn > 0 ? "text-success" : "text-danger"
+                totalReturn > 0 ? "text-success" : totalReturn === 0? "text-muted": "text-danger"
               }`}
             >
-              {Number(totalReturnPct).toFixed(2)}%
+              {totalReturnPct > 0 ? "+" : totalReturn ===0? "" : "-"}
+             {(Number.isFinite(Number(totalReturnPct)) ? totalReturnPct.toLocaleString(
+                  undefined,{minimumFractionDigits: 2,maximumFractionDigits: 2,}) : 0)}%
+
             </span>
           </div>
           <div className="stat-row border-0">

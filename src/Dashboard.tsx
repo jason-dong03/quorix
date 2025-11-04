@@ -47,7 +47,7 @@ const Dashboard: React.FC = () => {
   };
 
   const [risk_score, setRiskScore] = useState(0);
-  const [timeframe, setTimeframe] = useState<string>("1D");
+  const [timeframe, setTimeframe] = useState<string>("1M");
   const [holdingsTab, setHoldingsTab] = useState<HoldingsTab>("holdings");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const availableStocks = useFetchStockData();

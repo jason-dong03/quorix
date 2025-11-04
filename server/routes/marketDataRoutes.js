@@ -27,10 +27,7 @@ router.get("/api/watchlist", async (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const watchlist = await fetchUserWatchlist(decoded.uid);
-    //console.log(watchlist);
-    if (!watchlist || watchlist.length === 0) {
-      return res.status(404).json({ watchlist: [] });
-    }
+
     return res.json({ watchlist });
   } catch (err) {
     console.log("error: ", err);
@@ -43,10 +40,7 @@ router.get("/api/holdings", async (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const holdings = await fetchUserHoldings(decoded.uid);
-    // console.log(holdings);
-    if (!holdings || holdings.length === 0) {
-      return res.status(404).json({ holdings: [] });
-    }
+    
     return res.json({ holdings });
   } catch (err) {
     console.log("error: ", err);

@@ -29,10 +29,10 @@ export const TodaysPerformance: React.FC<TodaysPerformanceProps> = ({
             <small className="text-muted d-block mb-1">Gain</small>
             <h2
               className={`${
-                todayGain > 0 ? "text-success" : "text-danger"
+                todayGain > 0 ? "text-success" : todayGain === 0? "text-muted" : "text-danger"
               } mb-0`}
             >
-              {todayGain > 0 ? "+" : "-"}$
+              {todayGain > 0 ? "+" : todayGain === 0? "" : "-"}$
               {Math.abs(todayGain).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
@@ -43,11 +43,13 @@ export const TodaysPerformance: React.FC<TodaysPerformanceProps> = ({
             <small className="text-muted d-block mb-1">Percentage</small>
             <h2
               className={`${
-                todayGainPercent > 0 ? "text-success" : "text-danger"
+                todayGainPercent > 0 ? "text-success" : Number.isNaN(todayGainPercent) ? "text-muted": "text-danger"
               } mb-0`}
             >
-              {todayGainPercent > 0 ? "+" : ""}{" "}
-              {Number(todayGainPercent).toFixed(2)}%
+              {todayGainPercent > 0 ? "+" : ""}
+              {(Number.isFinite(Number(todayGainPercent)) ? todayGainPercent.toLocaleString(
+                  undefined,{minimumFractionDigits: 2,maximumFractionDigits: 2,}) : 0)}%
+
             </h2>
           </div>
           <hr />
