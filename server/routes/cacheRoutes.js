@@ -10,20 +10,19 @@ function nowET() {
 
 function previousBusinessDayET(d) {
   const out = new Date(d);
-  // move back one day until Mon–Fri
   do { out.setDate(out.getDate() - 1); } while ([0,6].includes(out.getDay()));
   return out;
 }
 
 function startOfSessionET(d) {
   const s = new Date(d);
-  s.setHours(9, 30, 0, 0);           // 09:30 ET
+  s.setHours(9, 30, 0, 0);           
   return s;
 }
 
 function endOfSessionET(d) {
   const e = new Date(d);
-  e.setHours(15, 55, 0, 0);          // 15:55 ET (your choice)
+  e.setHours(15, 55, 0, 0);          
   return e;
 }
 
@@ -99,7 +98,7 @@ router.get("/api/portfolio-history", async (req, res) => {
     //console.log("PORTFOLIO_HISTORY", JSON.stringify(portfolioHistory.slice(0, 5), null, 2));
     return res.json({ history: portfolioHistory });
   } catch (err) {
-    console.error("❌ Portfolio history error:", err);
+    //console.error("Portfolio history error:", err);
     return res.status(500).json({ error: "Failed to fetch portfolio history" });
   }
 });
@@ -109,7 +108,7 @@ function calculatePortfolioValues(priceHistories, mode = "1D") {
   if (!valid.length) return [];
 
   if (mode === "1D") {
-    // intraday: sum by raw bar timestamp (no normalization)
+    // intraday: sum by raw bar timestamp (no normalizing)
     const buckets = new Map(); // ts(ms) -> total
     for (const stock of valid) {
       const shares = parseFloat(stock.shares) || 0;

@@ -7,30 +7,24 @@ import {
   getDiversificationPercentage,
   getDiversificationPercentageColor,
 } from "../data/insightsData";
-import type { Holding, WatchlistStock } from "../types";
 import { useEffect } from "react";
+import { usePortfolio } from "../context/PortfolioContext";
 
 interface InsightsProp {
-  holdings: Holding[];
-  stocks_dict: WatchlistStock[];
   updateRiskScore: React.Dispatch<React.SetStateAction<number>>;
 }
 export const Insights: React.FC<InsightsProp> = ({
-  holdings,
-  stocks_dict,
   updateRiskScore,
 }) => {
-
+  const {holdings, availableStocks: stocks_dict } = usePortfolio();
   const HI = herfindahlIndex(holdings, stocks_dict) * 10;
   const sectorScore = sectorConcentration(holdings, stocks_dict) * 10;
   const holdingRiskNum = numHoldingsRisk(holdings);
 
   const diversification = holdings.length ===0? 0 : getDiversificationPercentage(holdings, stocks_dict);
-  const diversification_color =
-    getDiversificationPercentageColor(diversification);
-  const risk_score =  holdings.length === 0
-    ? 0
-    : Number(HI * 0.35 + sectorScore * 0.35 + holdingRiskNum * 0.3).toFixed(1);
+  console.log(`holding length ${holdings.length}, diverse: ${diversification}`);
+  const diversification_color = getDiversificationPercentageColor(diversification);
+  const risk_score =  holdings.length === 0? 0 : Number(HI * 0.35 + sectorScore * 0.35 + holdingRiskNum * 0.3).toFixed(1);
   
     useEffect(() => {
     updateRiskScore(Number(risk_score));

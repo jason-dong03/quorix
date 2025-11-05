@@ -74,7 +74,6 @@ export async function refreshMarketDataOnce() {
   }
 }
 
-// start scheduler
 export function startPriceUpdater() {
   refreshMarketDataOnce();
 
@@ -103,7 +102,6 @@ function errlog(msg, extra) {
   console.error(`[${now()}] ERROR ${msg}`, extra ?? "");
 }
 
-// Timeout + small retry around finnhubClient.quote
 function fetchQuote(symbol, { timeoutMs = 5000, retries = 2 } = {}) {
   return new Promise((resolve) => {
     let finished = false;

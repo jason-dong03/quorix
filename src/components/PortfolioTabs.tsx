@@ -1,7 +1,6 @@
-import type { Holding, HoldingsTab, WatchlistStock } from "../types.ts";
+import { usePortfolio } from "../context/PortfolioContext.tsx";
+import type { HoldingsTab } from "../types.ts";
 interface PortfolioTabsProps {
-  portfolio: Holding[];
-  watchlist: WatchlistStock[];
   holdingsTab: string;
   setHoldingsTab: React.Dispatch<React.SetStateAction<HoldingsTab>>;
   searchQuery: string;
@@ -9,14 +8,13 @@ interface PortfolioTabsProps {
   filteredStocks: any[];
 }
 export const PortfolioTabs: React.FC<PortfolioTabsProps> = ({
-  portfolio,
-  watchlist,
   holdingsTab,
   setHoldingsTab,
   searchQuery,
   setSearchQuery,
-  filteredStocks,
+  filteredStocks
 }) => {
+  const { holdings, watchlist } = usePortfolio();
   const handleTabChange = (tab: "holdings" | "watchlist" | "addstock") => {
     setHoldingsTab(tab);
     if (tab !== "addstock") {
@@ -31,7 +29,7 @@ export const PortfolioTabs: React.FC<PortfolioTabsProps> = ({
             onClick={() => setHoldingsTab("holdings")}
             className={`nav-link ${holdingsTab === "holdings" ? "active" : ""}`}
           >
-            Holdings ({portfolio.length})
+            Holdings ({holdings.length})
           </button>
         </li>
         <li className="nav-item">

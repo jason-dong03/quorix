@@ -1,18 +1,18 @@
 import { TrendingDown, TrendingUp } from "lucide-react";
 import type { WatchlistStock } from "../types";
+import { usePortfolio } from "../context/PortfolioContext";
 
 interface PortfolioWatchlistProps {
   onDeleteClick: (symbol: string) => Promise<void>;
-  watchlist: WatchlistStock[];
   onBuyClick?: (stock: WatchlistStock) => void;
   modalID?: string;
 }
 export const PortfolioWatchlist: React.FC<PortfolioWatchlistProps> = ({
-  watchlist,
   onDeleteClick,
   onBuyClick,
   modalID,
 }) => {
+  const {watchlist } = usePortfolio();
   const handleBuyClick = (stock: WatchlistStock) => {
     if (onBuyClick) {
       onBuyClick(stock);

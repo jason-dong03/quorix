@@ -11,7 +11,7 @@ export async function getUserById(id) {
 }
 
 export async function findOrCreateUserFromGoogle(profile) {
-  // check existing
+
   let res = await query(
     `SELECT id, google_id, email, name, picture
      FROM users
@@ -20,7 +20,6 @@ export async function findOrCreateUserFromGoogle(profile) {
   );
   if (res.rows.length > 0) return res.rows[0];
 
-  // insert new
   res = await query(
     `INSERT INTO users (google_id, email, name, picture)
      VALUES ($1, $2, $3, $4)

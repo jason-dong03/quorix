@@ -1,24 +1,18 @@
 import { useState, useMemo } from "react";
 import { TrendingDown, TrendingUp, ChevronDown, ChevronUp } from "lucide-react";
 import type { Holding, WatchlistStock } from "../types";
+import { usePortfolio } from "../context/PortfolioContext";
 
 interface PortfolioHoldingListProps {
-  portfolio: Holding[];
   onBuyClick: (stock: WatchlistStock) => void;
   onSellClick: (stock: Holding) => void;
   onRemovePosition: (symbol: string, lots: Holding[]) => Promise<void>;
   modalID?: string;
 }
 
-export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({
-  portfolio,
-  onBuyClick,
-  onSellClick,
-  onRemovePosition,
-  modalID,
-}) => {
+export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({onBuyClick,onSellClick,onRemovePosition,modalID,}) => {
+  const {holdings:portfolio } = usePortfolio();
   const [expandedSymbol, setExpandedSymbol] = useState<string | null>(null);
-
   const toggleExpand = (symbol: string) => {
     setExpandedSymbol(expandedSymbol === symbol ? null : symbol);
   };

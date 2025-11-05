@@ -15,7 +15,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     fetch(`http://localhost:4000/api/me`, {
       method: "GET",
-      credentials: "include", // IMPORTANT so cookies are sent
+      credentials: "include", 
     })
       .then((res) => res.json())
       .then((data) => {

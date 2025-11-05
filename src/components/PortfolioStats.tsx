@@ -1,19 +1,13 @@
+import { usePortfolio } from "../context/PortfolioContext";
 import {
   getNumHoldings,
   getPortfolioTotalInvested,
   getPortfolioTotalReturn,
   getPortfolioTotalReturnPct,
 } from "../data/dashboardCalculationFunctions";
-import type { Holding, WatchlistStock } from "../types";
 
-interface PortfolioStats {
-  holdings: Holding[];
-  stocks_dict: WatchlistStock[];
-}
-export const PortfolioStats: React.FC<PortfolioStats> = ({
-  holdings,
-  stocks_dict,
-}) => {
+export const PortfolioStats: React.FC = () => {
+  const {holdings, availableStocks: stocks_dict } = usePortfolio();
   const totalInvested = getPortfolioTotalInvested(holdings);
   const totalReturn = getPortfolioTotalReturn(holdings, stocks_dict);
   const totalReturnPct = getPortfolioTotalReturnPct(holdings, stocks_dict);
@@ -51,7 +45,7 @@ export const PortfolioStats: React.FC<PortfolioStats> = ({
                 totalReturn > 0 ? "text-success" : totalReturn === 0? "text-muted": "text-danger"
               }`}
             >
-              {totalReturnPct > 0 ? "+" : totalReturn ===0? "" : "-"}
+              {totalReturnPct > 0 ? "+" : ""}
              {(Number.isFinite(Number(totalReturnPct)) ? totalReturnPct.toLocaleString(
                   undefined,{minimumFractionDigits: 2,maximumFractionDigits: 2,}) : 0)}%
 

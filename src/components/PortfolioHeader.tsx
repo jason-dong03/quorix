@@ -5,20 +5,18 @@ import {
   getPortfolioTotalValue,
 } from "../data/dashboardCalculationFunctions";
 import type { Holding, WatchlistStock } from "../types";
+import { usePortfolio } from "../context/PortfolioContext";
 
 interface PortfolioHeaderProps {
-  holdings: Holding[];
-  stock_dict: WatchlistStock[];
   timeframe: string;
   setTimeframe: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export const PortfolioHeader: React.FC<PortfolioHeaderProps> = ({
-  holdings,
-  stock_dict,
   timeframe,
   setTimeframe,
 }) => {
+  const { holdings, availableStocks: stock_dict } = usePortfolio();
   const todayGainPct = getPortfolioTodayGainPct(holdings, stock_dict);
   const todayGain = getPortfolioTodayGain(holdings, stock_dict);
   return (

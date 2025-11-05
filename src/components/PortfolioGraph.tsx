@@ -4,10 +4,12 @@ import {
 } from "recharts";
 import type { ChartData } from "../types";
 import { fetchPortfolioHistory } from "../data/cacheData";
+import { usePortfolio } from "../context/PortfolioContext";
 
 interface PortfolioGraphProps { timeframe: string; }
 
 export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => {
+  const { holdings} = usePortfolio();
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +75,7 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
     );
   }
 
-  if (error) {
+  if (error && holdings.length >0) {
     return (
       <div className="card chart-card mb-4">
         <div className="card-body p-4">
@@ -83,7 +85,7 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
     );
   }
 
-  if (!chartData.length) {
+  if (!chartData.length || holdings.length === 0) {
     return (
       <div className="card chart-card mb-4">
         <div className="card-body p-4">

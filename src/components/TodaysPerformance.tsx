@@ -4,16 +4,11 @@ import {
   getPortfolioTodayGainPct,
   getPortfolioTotalValue,
 } from "../data/dashboardCalculationFunctions";
-import type { Holding, WatchlistStock } from "../types";
+import { usePortfolio } from "../context/PortfolioContext";
 
-interface TodaysPerformanceProps {
-  holdings: Holding[];
-  stocks_dict: WatchlistStock[];
-}
-export const TodaysPerformance: React.FC<TodaysPerformanceProps> = ({
-  holdings,
-  stocks_dict,
-}) => {
+
+export const TodaysPerformance: React.FC = () => {
+  const {holdings, availableStocks: stocks_dict } = usePortfolio();
   const totalValue = getPortfolioTotalValue(holdings, stocks_dict);
   const todayGain = getPortfolioTodayGain(holdings, stocks_dict);
   const todayGainPercent = getPortfolioTodayGainPct(holdings, stocks_dict);

@@ -8,7 +8,6 @@ import {
 
 const router = express.Router();
 
-// /auth/google
 router.get("/auth/google", (req, res) => {
   const redirect_uri = encodeURIComponent(
     "http://localhost:4000/auth/google/callback"
@@ -30,7 +29,8 @@ router.get("/auth/google", (req, res) => {
   res.redirect(oauthUrl);
 });
 
-// /auth/google/callback
+
+//after auth , call back flow
 router.get("/auth/google/callback", async (req, res) => {
   const code = req.query.code;
 
@@ -56,7 +56,7 @@ router.get("/auth/google/callback", async (req, res) => {
   );
 
   const profile = profileRes.data;
-  const dbUser = await findOrCreateUserFromGoogle(profile);
+  const dbUser = await findOrCreateUserFromGoogle(profile); //add to users
 
   const appToken = jwt.sign(
     {
@@ -80,7 +80,8 @@ router.get("/auth/google/callback", async (req, res) => {
   res.redirect("http://localhost:5173/dashboard");
 });
 
-// /api/me
+
+
 router.get("/api/me", async (req, res) => {
   const token = req.cookies.session;
   if (!token) return res.status(401).json({ user: null });
