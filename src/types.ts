@@ -22,10 +22,13 @@ export interface WatchlistStock {
 
 export interface NewsItem {
   title: string;
-  impact: "positive" | "negative";
+  impact: 0 | 1;
   relevance: number;
-  ticker: string;
+  symbol: string;
   summary: string;
+  source: string;
+  source_url: string;
+  news_date: string;
 }
 
 export interface ChartData {

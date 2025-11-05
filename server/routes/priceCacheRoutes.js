@@ -1,6 +1,6 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import { getHistoricalPrices } from "../models/cacheModel.js";
+import { getHistoricalPrices } from "../models/priceCacheModel.js";
 import { fetchUserHoldings } from "../models/marketDataModel.js";
 const router = express.Router();
 

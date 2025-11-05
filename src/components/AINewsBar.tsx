@@ -1,17 +1,48 @@
 import { useEffect, useState } from "react";
-import { aiNews } from "../data/newsData";
-import { Brain, ChevronRight, ChevronLeft } from "lucide-react";
+
+import { Brain, ChevronRight, ChevronLeft, TrendingUp, TrendingDown } from "lucide-react";
+import { usePortfolio } from "../context/PortfolioContext";
 
 function AINewsBar() {
   const [newsIndex, setNewsIndex] = useState<number>(0);
   const [newsExpanded, setNewsExpanded] = useState<boolean>(false);
 
+  const {holdings, news: aiNews} = usePortfolio(); 
+
   useEffect(() => {
+    if (aiNews.length === 0) return;
     const interval = setInterval(() => {
       setNewsIndex((prev) => (prev + 1) % aiNews.length);
     }, 5000);
     return () => clearInterval(interval);
   }, [aiNews.length]);
+  
+  if (holdings.length === 0) {
+    return (
+      <div className="card news-card mb-4">
+        <div className="card-body p-4 text-center">
+          <Brain size={32} className="text-muted mb-3 mx-auto" />
+          <h6 className="mb-2">No AI News Available</h6>
+          <p className="text-muted mb-0 small">
+            Add stocks to your portfolio to see personalized AI-powered news insights
+          </p>
+        </div>
+      </div>
+    );
+  }
+  if (aiNews.length === 0) {
+    return (
+      <div className="card news-card mb-4">
+        <div className="card-body p-4 text-center">
+          <div className="spinner-border text-primary mb-3" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <p className="text-muted mb-0 small">Fetching AI news insights...</p>
+        </div>
+      </div>
+    );
+  }
+
   const currentNews = aiNews[newsIndex];
   return (
     <>
@@ -44,12 +75,12 @@ function AINewsBar() {
                     <h5 className="mb-0">{currentNews.title}</h5>
                     <span
                       className={`badge ${
-                        currentNews.impact === "positive"
+                        Number(currentNews.impact) === 1
                           ? "bg-success"
                           : "bg-danger-badge"
                       }`}
                     >
-                      {currentNews.ticker}
+                      {currentNews.symbol}
                     </span>
                     <small className="text-muted">
                       Relevance: {currentNews.relevance}%
@@ -104,19 +135,23 @@ function AINewsBar() {
 
               <div className="row g-3 news-grid">
                 {aiNews.map((news, idx) => (
-                  <div key={idx} className="col-md-4">
+                  <div key={idx} 
+                  className="col-md-4"
+                  onClick={() => window.open(news.source_url, "_blank")} // or your own handler
+                  style={{ cursor: "pointer" }}
+                  >
                     <div className="card news-item h-100">
                       <div className="card-body">
                         <div className="d-flex justify-content-between align-items-start mb-3">
-                          <span
-                            className={`badge ${
-                              news.impact === "positive"
-                                ? "bg-success"
-                                : "bg-danger-badge"
-                            }`}
-                          >
-                            {news.ticker}
-                          </span>
+                          <div className="d-flex flex-row justify-content-start align-items-start gap-2">
+                             {Number(news.impact) === 1 ? <><TrendingUp width={20} className="text-success"/></> : <><TrendingDown width={20} className="text-danger"/></>}
+                            <span className={`badge ${Number(news.impact) === 1? "bg-success": "bg-danger-badge"}`}>
+                              {news.symbol}
+                            </span>
+                            <span className={`badge bg-primary`}>
+                              {news.source}
+                            </span>
+                          </div>
                           <small className="text-muted">
                             {news.relevance}%
                           </small>
@@ -125,6 +160,12 @@ function AINewsBar() {
                         <p className="card-text small text-muted news-summary">
                           {news.summary}
                         </p>
+                        <p className="card-text small">
+                         {new Date(news.news_date).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}</p>
                       </div>
                     </div>
                   </div>

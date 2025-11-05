@@ -1,10 +1,12 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import type { Holding, WatchlistStock } from '../types';
+import React, { createContext, useContext, useState, useEffect, type ReactNode, useMemo } from 'react';
+import type { Holding, NewsItem, WatchlistStock } from '../types';
 import { useFetchHoldingsData, useFetchWatchlistData, useFetchStockData } from '../data/stockData';
+import { useFetchAiNews } from '../data/newsData';
 
 interface PortfolioContextType {
   holdings: Holding[];
   watchlist: WatchlistStock[];
+  news: NewsItem[];
   availableStocks: WatchlistStock[];
   isLoading: boolean;
   refetchHoldings: () => Promise<void>;
@@ -17,6 +19,7 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({ children 
   const { holdings, refetch: refetchHoldingsRaw } = useFetchHoldingsData();
   const { watchlistStocks: watchlist, refetch: refetchWatchlistRaw } = useFetchWatchlistData();
   const availableStocks = useFetchStockData();
+
   
   const [isLoading, setIsLoading] = useState(true);
 
@@ -26,10 +29,18 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({ children 
     }
   }, [holdings, watchlist, availableStocks]);
 
+  const symbols = useMemo(
+    () => Array.from(new Set((holdings ?? []).map(h => h.symbol))).sort(),
+    [holdings]
+  );
+  
+  const {news} = useFetchAiNews(symbols);
+
   const value = {
     holdings: holdings || [],
     watchlist: watchlist || [],
     availableStocks: availableStocks || [],
+    news: news || [],
     isLoading,
     refetchHoldings: () => Promise.resolve(refetchHoldingsRaw()),
     refetchWatchlist: () => Promise.resolve(refetchWatchlistRaw()),

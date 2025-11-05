@@ -5,8 +5,10 @@ import cors from "cors";
 
 import authRoutes from "./routes/authRoutes.js";
 import marketDataRoutes from "./routes/marketDataRoutes.js";
-import cacheRoutes from "./routes/cacheRoutes.js";
+import priceCacheRoutes from "./routes/priceCacheRoutes.js";
+import newsCacheRoutes from "./routes/newsCacheRoutes.js";
 import { startPriceUpdater, insertEODData } from "./processes/priceUpdater.js";
+import {startNewsCleanup} from "./processes/newsCacheCleanup.js";
 dotenv.config();
 
 const app = express();
@@ -22,10 +24,12 @@ app.use(express.json());
 
 app.use(authRoutes);
 app.use(marketDataRoutes);
-app.use(cacheRoutes);
+app.use(priceCacheRoutes);
+app.use(newsCacheRoutes);
 app.listen(4000, () => {
   console.log("auth server running on http://localhost:4000");
   //insertEODData();
 });
 
 //startPriceUpdater();
+startNewsCleanup();

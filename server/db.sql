@@ -1,10 +1,10 @@
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS holdings CASCADE;
 DROP TABLE IF EXISTS watchlist CASCADE;
-DROP TABLE IF EXISTS prices CASCADE;
 DROP TABLE IF EXISTS market_data_updates CASCADE;
 DROP TABLE IF EXISTS tickers CASCADE;
 DROP TABLE IF EXISTS price_cache CASCADE;
+DROP TABLE IF EXISTS news_cache CASCADE;
 
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
@@ -43,15 +43,6 @@ CREATE TABLE IF NOT EXISTS watchlist (
 
 CREATE INDEX IF NOT EXISTS idx_watchlist_user ON watchlist(user_id);
 
-CREATE TABLE IF NOT EXISTS prices (
-  symbol TEXT NOT NULL REFERENCES tickers(symbol) ON DELETE CASCADE,
-  ts TIMESTAMPTZ NOT NULL,
-  close NUMERIC(18,4) NOT NULL,
-  PRIMARY KEY (symbol, ts)
-);
-
-CREATE INDEX IF NOT EXISTS idx_prices_symbol_ts
-  ON prices(symbol, ts DESC);
 
 CREATE TABLE IF NOT EXISTS market_data_updates (
   symbol TEXT PRIMARY KEY REFERENCES tickers(symbol) ON DELETE CASCADE,
@@ -60,7 +51,7 @@ CREATE TABLE IF NOT EXISTS market_data_updates (
   last_updated TIMESTAMPTZ DEFAULT NOW(),
   source TEXT
 );
-CREATE TABLE price_cache (
+CREATE TABLE IF NOT EXISTS price_cache (
   id SERIAL PRIMARY KEY,
   symbol TEXT NOT NULL,
   date DATE NOT NULL,
@@ -73,10 +64,26 @@ CREATE TABLE price_cache (
   UNIQUE(symbol, date)
 );
 CREATE INDEX idx_price_cache_symbol_date ON price_cache(symbol, date DESC);
+
+CREATE TABLE IF NOT EXISTS news_cache (
+  id SERIAL PRIMARY KEY,
+  symbol TEXT NOT NULL, 
+  title TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  source TEXT,
+  source_url TEXT NOT NULL,
+  relevance REAL NOT NULL,
+  impact NUMERIC NOT NULL, --0 neg, 1 pos
+  news_date TIMESTAMPTZ NOT NULL,
+  cached_at TIMESTAMPTZ DEFAULT NOW(),
+  expires_at TIMESTAMPTZ NOT NULL
+);
+
+
 ALTER TABLE users OWNER TO ppf3jn;
 ALTER TABLE holdings OWNER TO ppf3jn;
 ALTER TABLE watchlist OWNER TO ppf3jn;
 ALTER TABLE tickers OWNER TO ppf3jn;
-ALTER TABLE prices OWNER TO ppf3jn;
 ALTER TABLE market_data_updates OWNER TO ppf3jn;
 ALTER TABLE price_cache OWNER TO ppf3jn;
+ALTER TABLE news_cache OWNER TO ppf3jn;
