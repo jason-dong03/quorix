@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { NewsItem } from "../types";
-
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
 export function useFetchAiNews(symbols: string[]) {
   const [news, setNews] = useState<NewsItem[]>([]);
@@ -11,7 +11,7 @@ export function useFetchAiNews(symbols: string[]) {
       setNews([]);
       return;
     }
-    fetch(`http://localhost:4000/api/ai-news/?symbols=${symbolsParam}`, {
+    fetch(`${API_URL}/api/ai-news/?symbols=${symbolsParam}`, {
       method: "GET",
       credentials: "include",
     })

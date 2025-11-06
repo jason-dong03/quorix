@@ -1,5 +1,6 @@
 import type { ChartData } from "../types";
 
+
 export interface PortfolioHistoryResponse {
   history: ChartData[];
 }
@@ -8,8 +9,9 @@ export const fetchPortfolioHistory = async (
   timeframe: string
 ): Promise<ChartData[]> => {
   try {
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
     const response = await fetch(
-      `http://localhost:4000/api/portfolio-history?timeframe=${timeframe}`,
+      `${API_URL}api/portfolio-history?timeframe=${timeframe}`,
       {
         method: 'GET',
         credentials: 'include',

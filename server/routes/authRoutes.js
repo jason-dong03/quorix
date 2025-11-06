@@ -8,9 +8,12 @@ import {
 
 const router = express.Router();
 
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:4000";
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+
 router.get("/auth/google", (req, res) => {
   const redirect_uri = encodeURIComponent(
-    "http://localhost:4000/auth/google/callback"
+    `${BACKEND_URL}/auth/google/callback`
   );
   const scope = encodeURIComponent(["openid", "email", "profile"].join(" "));
 
@@ -29,8 +32,6 @@ router.get("/auth/google", (req, res) => {
   res.redirect(oauthUrl);
 });
 
-
-//after auth , call back flow
 router.get("/auth/google/callback", async (req, res) => {
   const code = req.query.code;
 
@@ -40,7 +41,7 @@ router.get("/auth/google/callback", async (req, res) => {
       code,
       client_id: process.env.GOOGLE_CLIENT_ID,
       client_secret: process.env.GOOGLE_CLIENT_SECRET,
-      redirect_uri: "http://localhost:4000/auth/google/callback",
+      redirect_uri: `${BACKEND_URL}/auth/google/callback`,
       grant_type: "authorization_code",
     }),
     { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
@@ -56,7 +57,7 @@ router.get("/auth/google/callback", async (req, res) => {
   );
 
   const profile = profileRes.data;
-  const dbUser = await findOrCreateUserFromGoogle(profile); //add to users
+  const dbUser = await findOrCreateUserFromGoogle(profile);
 
   const appToken = jwt.sign(
     {
@@ -72,15 +73,13 @@ router.get("/auth/google/callback", async (req, res) => {
 
   res.cookie("session", appToken, {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production", // true in production
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // "none" for cross-site cookies
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  res.redirect("http://localhost:5173/dashboard");
+  res.redirect(`${CLIENT_URL}/dashboard`);
 });
-
-
 
 router.get("/api/me", async (req, res) => {
   const token = req.cookies.session;

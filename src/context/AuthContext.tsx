@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { AuthContextType, User } from "../types.ts";
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
@@ -13,7 +14,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://localhost:4000/api/me`, {
+    fetch(`${API_URL}/api/me`, {
       method: "GET",
       credentials: "include", 
     })
