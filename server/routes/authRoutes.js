@@ -12,7 +12,7 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:4000";
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 router.get("/auth/google", (req, res) => {
-  const redirect_uri = `/auth/google/callback`; 
+  const redirect_uri = `${BACKEND_URL}/auth/google/callback`; 
   const params = new URLSearchParams({
     client_id: process.env.GOOGLE_CLIENT_ID,
     redirect_uri,                     
