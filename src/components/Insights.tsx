@@ -16,17 +16,29 @@ interface InsightsProp {
 export const Insights: React.FC<InsightsProp> = ({
   updateRiskScore,
 }) => {
+
+  const num = (v: any, d = 0) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : d;
+  };
   const {holdings, availableStocks: stocks_dict } = usePortfolio();
-  const HI = herfindahlIndex(holdings, stocks_dict) * 10;
-  const sectorScore = sectorConcentration(holdings, stocks_dict) * 10;
-  const holdingRiskNum = numHoldingsRisk(holdings);
+  const HI          = num(herfindahlIndex(holdings, stocks_dict)) * 10;
+  const sectorScore = num(sectorConcentration(holdings, stocks_dict)) * 10;
+  const holdingRiskNum = numHoldingsRisk(holdings); // ensure this always returns a number
+
 
   const diversification = holdings.length ===0? 0 : getDiversificationPercentage(holdings, stocks_dict);
   const diversification_color = getDiversificationPercentageColor(diversification);
-  const risk_score =  holdings.length === 0? 0 : Number(HI * 0.35 + sectorScore * 0.35 + holdingRiskNum * 0.3).toFixed(1);
-    useEffect(() => {
-    updateRiskScore(Number(risk_score));
-  }, []);
+
+  const raw = holdings.length === 0? 0 : num(HI) * 0.35 + num(sectorScore) * 0.35 + num(holdingRiskNum) * 0.3;
+
+  const risk_score = Number(raw.toFixed(1)); 
+
+  useEffect(() => {
+    if(Number.isFinite(risk_score)){
+      updateRiskScore(Number(risk_score));
+    }
+  }, [risk_score, holdings, stocks_dict, updateRiskScore]);
   const risk_score_label = getRiskScoreLabel(Number(risk_score));
   return (
     <>
