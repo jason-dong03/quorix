@@ -15,21 +15,18 @@ router.get("/auth/google", (req, res) => {
   const redirect_uri = encodeURIComponent(
     `${BACKEND_URL}/auth/google/callback`
   );
-  const scope = encodeURIComponent(["openid", "email", "profile"].join(" "));
+  const params = new URLSearchParams({
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    redirect_uri,
+    response_type: "code",
+    scope: ["openid","email","profile"].join(" "),
+    access_type: "online",
+    include_granted_scopes: "true",
+    prompt: "select_account", // optional
+  });
 
-  const oauthUrl = `
-    https://accounts.google.com/o/oauth2/v2/auth
-      ?client_id=${process.env.GOOGLE_CLIENT_ID}
-      &redirect_uri=${redirect_uri}
-      &response_type=code
-      &scope=${scope}
-      &access_type=online
-      &prompt=consent
-  `
-    .replace(/\s+/g, "")
-    .trim();
+  res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
 
-  res.redirect(oauthUrl);
 });
 
 router.get("/auth/google/callback", async (req, res) => {
