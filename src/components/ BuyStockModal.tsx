@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import type { Holding, WatchlistStock } from "../types";
 import { addStockToHolding } from "../data/stockData";
+import { usePortfolio } from "../context/PortfolioContext";
 
 interface ModalProps {
   stock: WatchlistStock | null;
@@ -8,38 +9,61 @@ interface ModalProps {
 }
 
 export const BuyStockModal: React.FC<ModalProps> = ({ stock, onSuccess }) => {
+  const { refetchHoldings } = usePortfolio();
   const price = useMemo(() => Number(stock?.last_price ?? 0), [stock]);
   const [tab, setTab] = useState<"shares" | "amount">("shares");
   const [shares, setShares] = useState<number>(1);
   const [amount, setAmount] = useState<number>(100);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const estCost = useMemo(() => +(shares * price).toFixed(2), [shares, price]);
   const estShares = useMemo(
     () => +(amount / price || 0).toFixed(3),
     [amount, price]
   );
+  
   const canConfirm =
     !!stock &&
     price > 0 &&
     ((tab === "shares" && shares > 0) ||
       (tab === "amount" && amount > 0 && estShares > 0));
+
   const handleConfirm = async () => {
-    if (!stock || !canConfirm) return;
-    const holdingStock: Holding = {
-      ...stock,
-      bought_at: stock.last_price,
-      shares: tab === "shares" ? shares : estShares,
-      avg_cost: tab === "shares" ? estCost : amount,
-    };
-    const addStock = await addStockToHolding(holdingStock);
-    if (addStock) {
-      onSuccess();
-      window.location.reload();
-      console.log("success, added new stocks");
-    } else {
-      console.log("error, failed to add stocks");
+    if (!stock || !canConfirm || isSubmitting) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      const holdingStock: Holding = {
+        ...stock,
+        bought_at: stock.last_price,
+        shares: tab === "shares" ? shares : estShares,
+        avg_cost: tab === "shares" ? estCost : amount,
+      };
+      
+      const addStock = await addStockToHolding(holdingStock);
+      
+      if (addStock) {
+        await refetchHoldings(); // Refetch data instead of reload
+        onSuccess();
+        console.log("success, added new stocks");
+        
+        // Reset form
+        setShares(1);
+        setAmount(100);
+        setTab("shares");
+      } else {
+        console.log("error, failed to add stocks");
+        alert("Failed to add stock");
+      }
+    } catch (error) {
+      console.error("Error adding stock:", error);
+      alert("Failed to add stock");
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
   return (
     <>
       <div
@@ -110,6 +134,7 @@ export const BuyStockModal: React.FC<ModalProps> = ({ stock, onSuccess }) => {
                       className="form-control"
                       value={shares}
                       onChange={(e) => setShares(Number(e.target.value))}
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="col-6">
@@ -135,6 +160,7 @@ export const BuyStockModal: React.FC<ModalProps> = ({ stock, onSuccess }) => {
                       className="form-control"
                       value={amount}
                       onChange={(e) => setAmount(Number(e.target.value))}
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="col-6">
@@ -157,6 +183,7 @@ export const BuyStockModal: React.FC<ModalProps> = ({ stock, onSuccess }) => {
                 type="button"
                 className="btn btn-secondary"
                 data-bs-dismiss="modal"
+                disabled={isSubmitting}
               >
                 Cancel
               </button>
@@ -164,10 +191,17 @@ export const BuyStockModal: React.FC<ModalProps> = ({ stock, onSuccess }) => {
                 type="button"
                 className="btn btn-primary"
                 data-bs-dismiss="modal"
-                disabled={!canConfirm}
+                disabled={!canConfirm || isSubmitting}
                 onClick={handleConfirm}
               >
-                Confirm Purchase
+                {isSubmitting ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" />
+                    Processing...
+                  </>
+                ) : (
+                  "Confirm Purchase"
+                )}
               </button>
             </div>
           </div>
