@@ -83,7 +83,7 @@ function AINewsBar() {
                       {currentNews.symbol}
                     </span>
                     <small className="text-muted">
-                      Relevance: {currentNews.relevance}%
+                      Relevance: {currentNews.relevance * 100}%
                     </small>
                   </div>
                 </div>
@@ -153,7 +153,7 @@ function AINewsBar() {
                             </span>
                           </div>
                           <small className="text-muted">
-                            {news.relevance}%
+                            {news.relevance * 100}%
                           </small>
                         </div>
                         <h6 className="card-title">{news.title}</h6>
