@@ -21,6 +21,12 @@ import { usePortfolio } from "./context/PortfolioContext.tsx";
 import { usePortfolioActions } from "./hooks/usePortfolioActions.ts";
 
 const Dashboard: React.FC = () => {
+  useEffect(() => {
+    const u = new URL(window.location.href);
+    if (u.searchParams.has('code') || u.searchParams.has('scope') || u.searchParams.has('state')) {
+      window.history.replaceState({}, '', '/dashboard');
+    }
+  }, []);
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const {watchlist, availableStocks, isLoading } = usePortfolio();

@@ -12,7 +12,7 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:4000";
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 router.get("/auth/google", (req, res) => {
-  const redirect_uri = `${BACKEND_URL}/auth/google/callback`; 
+  const redirect_uri = `/auth/google/callback`; 
   const params = new URLSearchParams({
     client_id: process.env.GOOGLE_CLIENT_ID,
     redirect_uri,                     
@@ -21,7 +21,6 @@ router.get("/auth/google", (req, res) => {
     access_type: "online",
     include_granted_scopes: "true",
     //prompt: "select_account",        
-    state: "<random-csrf-token>"    // recommended to add
   });
   res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
 });
@@ -73,7 +72,7 @@ router.get("/auth/google/callback", async (req, res) => {
     domain: undefined
   });
 
-  res.redirect(`${CLIENT_URL}/dashboard`);
+  res.redirect(303, `${CLIENT_URL}/dashboard`);
 });
 
 router.get("/api/me", async (req, res) => {
