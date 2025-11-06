@@ -24,7 +24,6 @@ export const Insights: React.FC<InsightsProp> = ({
   const diversification = holdings.length ===0? 0 : getDiversificationPercentage(holdings, stocks_dict);
   const diversification_color = getDiversificationPercentageColor(diversification);
   const risk_score =  holdings.length === 0? 0 : Number(HI * 0.35 + sectorScore * 0.35 + holdingRiskNum * 0.3).toFixed(1);
-  
     useEffect(() => {
     updateRiskScore(Number(risk_score));
   }, []);

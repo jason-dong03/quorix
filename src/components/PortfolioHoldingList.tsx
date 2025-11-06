@@ -100,7 +100,7 @@ export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({onBuy
                         <h5 className="mb-0">{stock.symbol}</h5>
                         { (
                           <span className="badge bg-secondary">
-                            {stock.lots.length} lots
+                            {stock.lots.length} {stock.lots.length > 1? "lots": "lot"}
                           </span>
                         )}
                       </div>

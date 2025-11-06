@@ -28,7 +28,7 @@ app.use(priceCacheRoutes);
 app.use(newsCacheRoutes);
 app.listen(4000, () => {
   console.log("auth server running on http://localhost:4000");
-  //insertEODData();
+  insertEODData();
 });
 
 //startPriceUpdater();

@@ -78,12 +78,3 @@ CREATE TABLE IF NOT EXISTS news_cache (
   cached_at TIMESTAMPTZ DEFAULT NOW(),
   expires_at TIMESTAMPTZ NOT NULL
 );
-
-
-ALTER TABLE users OWNER TO ppf3jn;
-ALTER TABLE holdings OWNER TO ppf3jn;
-ALTER TABLE watchlist OWNER TO ppf3jn;
-ALTER TABLE tickers OWNER TO ppf3jn;
-ALTER TABLE market_data_updates OWNER TO ppf3jn;
-ALTER TABLE price_cache OWNER TO ppf3jn;
-ALTER TABLE news_cache OWNER TO ppf3jn;

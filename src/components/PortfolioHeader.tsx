@@ -4,7 +4,6 @@ import {
   getPortfolioTodayGainPct,
   getPortfolioTotalValue,
 } from "../data/dashboardCalculationFunctions";
-import type { Holding, WatchlistStock } from "../types";
 import { usePortfolio } from "../context/PortfolioContext";
 
 interface PortfolioHeaderProps {
