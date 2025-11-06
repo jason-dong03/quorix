@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { AuthContextType, User } from "../types.ts";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_URL ="";
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
