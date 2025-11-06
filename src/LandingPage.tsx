@@ -2,10 +2,9 @@ import React from "react";
 import { PieChart } from "lucide-react";
 import "./css/LandingPage.css";
 
-const API_URL = "";
 const LandingPage: React.FC = () => {
   const handleGoogleSignIn = () => {
-    window.location.href = `${API_URL}/auth/google`;
+    window.location.href = `/auth/google`;
   };
 
   return (

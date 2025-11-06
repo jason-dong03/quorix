@@ -12,6 +12,7 @@ import {startNewsCleanup} from "./processes/newsCacheCleanup.js";
 dotenv.config();
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(cookieParser());
 app.use(
   cors({
@@ -30,8 +31,8 @@ app.use(priceCacheRoutes);
 app.use(newsCacheRoutes);
 app.listen(4000, () => {
   console.log("auth server running on quorix-production.up.railway.app");
-  insertEODData();
+  //insertEODData();
 });
 
-//startPriceUpdater();
+startPriceUpdater();
 startNewsCleanup();

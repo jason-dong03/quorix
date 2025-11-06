@@ -9,9 +9,8 @@ export const fetchPortfolioHistory = async (
   timeframe: string
 ): Promise<ChartData[]> => {
   try {
-    const API_URL = ""; 
     const response = await fetch(
-      `${API_URL}/api/portfolio-history?timeframe=${timeframe}`,
+      `/api/portfolio-history?timeframe=${timeframe}`,
       {
         method: 'GET',
         credentials: 'include',

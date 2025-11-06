@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import type { WatchlistStock, Holding } from "../types";
 
-const API_URL = ""; 
 export function useFetchStockData() {
   const [availableStocks, setAvailableStocks] = useState<WatchlistStock[]>([]);
   useEffect(() => {
-    fetch(`${API_URL}/api/market_data`, {
+    fetch(`/api/market_data`, {
       method: "GET",
       credentials: "include",
     })
@@ -25,7 +24,7 @@ export function useFetchWatchlistData() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/watchlist`, {
+    fetch(`/api/watchlist`, {
       method: "GET",
       credentials: "include",
     })
@@ -45,7 +44,7 @@ export function useFetchHoldingsData() {
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
   useEffect(() => {
-    fetch(`${API_URL}/api/holdings`, {
+    fetch(`/api/holdings`, {
       method: "GET",
       credentials: "include",
     })
@@ -62,7 +61,7 @@ export function useFetchHoldingsData() {
 }
 
 export async function addStockToHolding(stock: Holding) {
-  const res = await fetch(`${API_URL}/api/holdings`, {
+  const res = await fetch(`/api/holdings`, {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -79,7 +78,7 @@ export async function addStockToHolding(stock: Holding) {
 }
 
 export async function addStockToWatchlist(stock: WatchlistStock) {
-  const res = await fetch(`${API_URL}/api/watchlist`, {
+  const res = await fetch(`/api/watchlist`, {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -93,7 +92,7 @@ export async function addStockToWatchlist(stock: WatchlistStock) {
 }
 
 export async function deleteStockFromWatchlist(symbol: string) {
-  const res = await fetch(`${API_URL}/api/watchlist/${symbol}`, {
+  const res = await fetch(`/api/watchlist/${symbol}`, {
     method: "DELETE",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -102,7 +101,7 @@ export async function deleteStockFromWatchlist(symbol: string) {
   return result.success;
 }
 export async function sellHoldingStock(symbol: string, shares:number, bought_at:number){
-  const res = await fetch(`${API_URL}/api/sell_holding`, {
+  const res = await fetch(`/api/sell_holding`, {
     method: "DELETE",
     credentials: "include",
     headers: { "Content-Type": "application/json" },

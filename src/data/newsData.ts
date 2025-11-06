@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import type { NewsItem } from "../types";
-const API_URL = ""; 
 export function useFetchAiNews(symbols: string[]) {
   const [news, setNews] = useState<NewsItem[]>([]);
   const symbolsParam = symbols.join(',');
@@ -10,7 +9,7 @@ export function useFetchAiNews(symbols: string[]) {
       setNews([]);
       return;
     }
-    fetch(`${API_URL}/api/ai-news/?symbols=${symbolsParam}`, {
+    fetch(`/api/ai-news/?symbols=${symbolsParam}`, {
       method: "GET",
       credentials: "include",
     })
