@@ -11,7 +11,7 @@ export const fetchPortfolioHistory = async (
   try {
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
     const response = await fetch(
-      `${API_URL}api/portfolio-history?timeframe=${timeframe}`,
+      `${API_URL}/api/portfolio-history?timeframe=${timeframe}`,
       {
         method: 'GET',
         credentials: 'include',
