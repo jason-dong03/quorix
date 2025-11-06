@@ -16,7 +16,7 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: ["http://localhost:5173",
-      "quorix-production.up.railway.app"
+      "https://quorixx.netlify.app"
     ],
     credentials: true,
   })
@@ -29,7 +29,7 @@ app.use(marketDataRoutes);
 app.use(priceCacheRoutes);
 app.use(newsCacheRoutes);
 app.listen(4000, () => {
-  console.log("auth server running on http://localhost:4000");
+  console.log("auth server running on quorix-production.up.railway.app");
   insertEODData();
 });
 
