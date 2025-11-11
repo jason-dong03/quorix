@@ -107,7 +107,7 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
         const history = await fetchPortfolioHistory(timeframe);
         const transformed: ChartData[] = history
           .map((item:any) => ({
-            timestamp: toMs(Number(item.timestamp) || new Date(item.date).getTime()),
+            timestamp: toMs(Number(item.timestamp) || Date.parse(item.date)),
             date: item.date,
             value: Number(item.value),
           }))
@@ -197,39 +197,34 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
     );
   }
 
-  const intradayTicks = is1D ? buildIntradayEtTicks(chartData) : undefined;
+  const intradayTicks = React.useMemo(() => (
+    is1D ? buildIntradayEtTicks(chartData) : undefined
+  ), [is1D, chartData]);
+
+  const intradayDomain = React.useMemo<[number, number] | undefined>(() => {
+  if (!is1D || !intradayTicks?.length) return undefined;
+  return [intradayTicks[0], intradayTicks[intradayTicks.length - 1]];
+}, [is1D, intradayTicks]);
 
   function getImprovedCategoryTicks(data: ChartData[]): string[] {
     if (!data.length) return [];
-    
-    const totalPoints = data.length;
-    let tickCount: number;
-    
-    if (timeframe === '5D') {
-      tickCount = 5; 
-    } else if (timeframe === '1M') {
-      tickCount = 8;
-    } else {
-      tickCount = Math.min(10, totalPoints);
-    }
-    
-    const step = Math.floor(totalPoints / tickCount);
-    const ticks: string[] = [];
-    
-    for (let i = 0; i < totalPoints; i += step) {
-      ticks.push(data[i].date);
-    }
-    
+    const sorted = [...data].sort((a,b) => a.timestamp - b.timestamp);
 
-    if (ticks[ticks.length - 1] !== data[totalPoints - 1].date) {
-      ticks.push(data[totalPoints - 1].date);
-    }
-    
+    const total = sorted.length;
+    const desired = timeframe === "5D" ? 5 : timeframe === "1M" ? 8 : 10;
+    const step = Math.max(1, Math.floor(total / desired));
+
+    const ticks: string[] = [];
+    for (let i = 0; i < total; i += step) ticks.push(sorted[i].date);
+
+    const lastDate = sorted[total - 1].date;
+    if (ticks[ticks.length - 1] !== lastDate) ticks.push(lastDate);
     return ticks;
   }
-const improvedCategoryTicks = !is1D && chartData.length 
-  ? getImprovedCategoryTicks(chartData)
-  : undefined;
+
+  const improvedCategoryTicks = !is1D && chartData.length
+    ? getImprovedCategoryTicks(chartData)
+    : undefined;
 
   return (
     <div className="card chart-card mb-4">
@@ -291,7 +286,7 @@ const improvedCategoryTicks = !is1D && chartData.length
               dataKey={is1D ? "timestamp" : "date"}
               type={is1D ? "number" : "category"}
               scale={is1D ? "time" : undefined}
-              domain={is1D ? ["dataMin", "dataMax"] : undefined}
+              domain={is1D ? intradayDomain : undefined}
               ticks={is1D ? intradayTicks : improvedCategoryTicks} // ← New function
               stroke="#6c757d"
               style={{ fontSize: "12px" }}
@@ -299,10 +294,12 @@ const improvedCategoryTicks = !is1D && chartData.length
               angle={-45} 
               textAnchor="end"
               height={60}
-              tickFormatter={(val: number | string) =>
+              tickFormatter={(val) =>
                 is1D
-                  ? new Date(val as number).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
-                  : new Date(val as string).toLocaleDateString("en-US", { month: 'short', day: 'numeric' })
+                  ? new Date(val as number).toLocaleTimeString("en-US", {
+                      hour: "numeric", minute: "2-digit", timeZone: "America/New_York",
+                    })
+                  : new Date(val as string).toLocaleDateString("en-US", { month: "short", day: "numeric" })
               }
             />
 
