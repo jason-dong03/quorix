@@ -158,6 +158,12 @@ const [yMin, yMax] = yDomain;
     }
     return want.filter(l => labelToTs.has(l)).map(l => labelToTs.get(l)!);
   }
+  const intradayTicks = is1D ? buildIntradayEtTicks(chartData) : undefined;
+  const intradayDomain = React.useMemo<[number, number] | undefined>(() => {
+  if (!is1D || !intradayTicks?.length) return undefined;
+  return [intradayTicks[0], intradayTicks[intradayTicks.length - 1]];
+}, [is1D, intradayTicks]);
+
 
   if (loading) {
     return (
@@ -194,12 +200,7 @@ const [yMin, yMax] = yDomain;
     );
   }
 
- const intradayTicks = is1D ? buildIntradayEtTicks(chartData) : undefined;
-  const intradayDomain = React.useMemo<[number, number] | undefined>(() => {
-  if (!is1D || !intradayTicks?.length) return undefined;
-  return [intradayTicks[0], intradayTicks[intradayTicks.length - 1]];
-}, [is1D, intradayTicks]);
-
+ 
   function getImprovedCategoryTicks(data: ChartData[]): string[] {
     if (!data.length) return [];
     const sorted = [...data].sort((a,b) => a.timestamp - b.timestamp);
