@@ -197,10 +197,7 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
     );
   }
 
-  const intradayTicks = React.useMemo(() => (
-    is1D ? buildIntradayEtTicks(chartData) : undefined
-  ), [is1D, chartData]);
-
+ const intradayTicks = is1D ? buildIntradayEtTicks(chartData) : undefined;
   const intradayDomain = React.useMemo<[number, number] | undefined>(() => {
   if (!is1D || !intradayTicks?.length) return undefined;
   return [intradayTicks[0], intradayTicks[intradayTicks.length - 1]];
