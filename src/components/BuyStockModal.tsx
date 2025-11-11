@@ -5,10 +5,9 @@ import { usePortfolio } from "../context/PortfolioContext";
 
 interface ModalProps {
   stock: WatchlistStock | null;
-  onSuccess: () => void;
 }
 
-export const BuyStockModal: React.FC<ModalProps> = ({ stock, onSuccess }) => {
+export const BuyStockModal: React.FC<ModalProps> = ({ stock }) => {
   const { refetchHoldings } = usePortfolio();
   const price = useMemo(() => Number(stock?.last_price ?? 0), [stock]);
   const [tab, setTab] = useState<"shares" | "amount">("shares");
@@ -44,11 +43,8 @@ export const BuyStockModal: React.FC<ModalProps> = ({ stock, onSuccess }) => {
       const addStock = await addStockToHolding(holdingStock);
       
       if (addStock) {
-        await refetchHoldings(); // Refetch data instead of reload
-        onSuccess();
-        console.log("success, added new stocks");
-        
-        // Reset form
+        await refetchHoldings();
+        // console.log("success, added new stocks");
         setShares(1);
         setAmount(100);
         setTab("shares");

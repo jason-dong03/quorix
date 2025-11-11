@@ -5,6 +5,7 @@ import { AuthProvider } from "./context/AuthContext.tsx";
 
 import LandingPage from "./LandingPage";
 import Dashboard from "./Dashboard.tsx";
+import Portfolio from "./Portfolio.tsx"
 
 import ProtectedRoute from "./auth/ProtectedRoute";
 import { PortfolioProvider } from "./context/PortfolioContext.tsx";
@@ -25,6 +26,17 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
               </PortfolioProvider>
             }
           />
+          <Route 
+            path= "/portfolio"
+            element={
+                <PortfolioProvider>
+                  <ProtectedRoute>
+                      <Portfolio/>
+                    </ProtectedRoute>
+                </PortfolioProvider>
+          }
+          />
+
         </Routes>
       </AuthProvider>
     </BrowserRouter>

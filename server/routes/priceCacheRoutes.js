@@ -1,7 +1,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import { getHistoricalPrices } from "../models/priceCacheModel.js";
-import { fetchUserHoldings } from "../models/marketDataModel.js";
+import { getHistoricalPrices,fetchUserTransactions } from "../models/priceCacheModel.js";
+import { fetchUserHoldingsByDate } from "../models/marketDataModel.js";
 const router = express.Router();
 
 function nowET() {
@@ -57,6 +57,8 @@ function buildRange(timeframe) {
   const start = new Date(etNow); start.setDate(start.getDate() - 35);
   return { startISO: toUtcIso(start), endISO: toUtcIso(etNow), apiTf: "1Day" };
 }
+
+//TREAT SELL FEATURE AS NEGATIVE NOT DELETE FROM DB AND MARK IT AS SOLD 
 router.get("/api/portfolio-history", async (req, res) => {
   const token = req.cookies.session;
   if (!token) return res.status(404).json({ user: null });
@@ -66,7 +68,7 @@ router.get("/api/portfolio-history", async (req, res) => {
     const userID = decoded.uid;
     const { timeframe = "1M" } = req.query;
 
-    const holdings = await fetchUserHoldings(userID);
+    const holdings = await fetchUserHoldingsByDate(userID);
 
     const groupedHoldings = Object.values(
       holdings.reduce((acc, h) => {
@@ -87,81 +89,127 @@ router.get("/api/portfolio-history", async (req, res) => {
 
     const priceHistories = await Promise.all(
       groupedHoldings.map(async (h) => {
-        console.log(`Fetching ${h.symbol} x ${h.shares} ...`);
-        // IMPORTANT: pass datetime ISO strings, not date-only
         const prices = await getHistoricalPrices(h.symbol, startISO, endISO, apiTf);
-        return { symbol: h.symbol, shares: h.shares, prices };
+        return { symbol: h.symbol, prices };
       })
     );
+    const transactions = await fetchUserTransactions(userID, endISO);
+    //console.log("transaction result: ", transactions);
 
-    const portfolioHistory = calculatePortfolioValues(priceHistories, timeframe);
-    //console.log("PORTFOLIO_HISTORY", JSON.stringify(portfolioHistory.slice(0, 5), null, 2));
-    return res.json({ history: portfolioHistory });
+  
+    const tsSet = new Set();
+    for (const { prices } of priceHistories) {
+      for (const p of prices || []) {
+        const tsRaw = p.t || p.timestamp || p.date;
+        if (!tsRaw) continue;
+        const ms = new Date(tsRaw).getTime();
+        if (!Number.isNaN(ms)) tsSet.add(ms);
+      }
+    }
+    if (tsSet.size === 0) return res.json({ history: [] });
+
+    const timeline = Array.from(tsSet).sort((a, b) => a - b);
+
+   
+    const priceMap = new Map(); 
+    for (const { symbol, prices } of priceHistories) {
+      const m = new Map();
+      for (const p of prices || []) {
+        const tsRaw = p.t || p.timestamp || p.date;
+        const ms = new Date(tsRaw).getTime();
+        const close = Number(p.close ?? p.c); 
+        if (Number.isFinite(ms) && Number.isFinite(close)) {
+          m.set(ms, close);
+        }
+      }
+      priceMap.set(symbol, m);
+    }
+    //console.log("🟢 priceMap symbols:", [...priceMap.keys()]);
+    for (const [symbol, m] of priceMap.entries()) {
+      //console.log(`${symbol} barCount = ${m.size}`);
+      let last;
+      for (const ts of timeline) {
+        if (m.has(ts)) last = m.get(ts);
+        else if (last != null) m.set(ts, last);
+        else m.set(ts, 0); 
+      }
+    }
+
+    const priceSymbols = new Set(priceMap.keys());
+    const txs = transactions
+      .filter((t) => priceSymbols.has(t.symbol))
+      .map((t) => ({
+        symbol: t.symbol,
+        shares: Number(t.shares), 
+        ms: new Date(t.updated_at).getTime(),
+      }))
+      .filter((t) => Number.isFinite(t.ms) && Number.isFinite(t.shares))
+      .sort((a, b) => a.ms - b.ms); 
+
+    //console.log("tx count:", txs.length);
+    //console.log("timeline points:", timeline.length);
+
+   
+    const holdingsNow = new Map();
+    let txIdx = 0;
+
+    const history = [];
+    for (const ts of timeline) {
+      while (txIdx < txs.length && txs[txIdx].ms <= ts) {
+        const { symbol, shares } = txs[txIdx];
+        const prev = holdingsNow.get(symbol) || 0;
+        holdingsNow.set(symbol, prev + shares);
+        txIdx++;
+      }
+
+      let total = 0;
+      for (const [symbol, shares] of holdingsNow.entries()) {
+        if (!shares) continue;
+        const m = priceMap.get(symbol);
+        const price = m ? m.get(ts) ?? 0 : 0;
+        total += shares * price;
+      }
+
+      history.push({
+        timestamp: ts,
+        date:
+          timeframe === "1D"
+            ? new Date(ts).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+            : new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        value: Math.round(total * 100) / 100,
+      });
+    }
+
+    return res.json({ history });
   } catch (err) {
-    //console.error("Portfolio history error:", err);
+    console.error("Portfolio history error:", err);
     return res.status(500).json({ error: "Failed to fetch portfolio history" });
   }
 });
 
-function calculatePortfolioValues(priceHistories, mode = "1D") {
-  const valid = (priceHistories || []).filter((s) => s?.prices?.length > 0);
-  if (!valid.length) return [];
+// GET /api/benchmarks?timeframe=1M&symbols=SPY,QQQ,DIA&mode=percent
+router.get("/api/benchmarks", async (req, res) => {
+  const { timeframe = "1M", symbols = "SPY,QQQ,DIA", mode = "percent" } = req.query;
+  const list = symbols.split(",").map(s => s.trim().toUpperCase()).filter(Boolean);
 
-  if (mode === "1D") {
-    // intraday: sum by raw bar timestamp (no normalizing)
-    const buckets = new Map(); // ts(ms) -> total
-    for (const stock of valid) {
-      const shares = parseFloat(stock.shares) || 0;
-      if (shares <= 0) continue;
-      for (const p of stock.prices) {
-        const tsRaw = p.t || p.date; if (!tsRaw) continue;
-        const close = +p.close; if (!Number.isFinite(close)) continue;
-        const ts = new Date(tsRaw).getTime();
-        buckets.set(ts, (buckets.get(ts) || 0) + shares * close);
-      }
-    }
-    const keys = Array.from(buckets.keys()).sort((a, b) => a - b);
-    return keys.map((ms) => ({
-      timestamp: ms,
-      date: new Date(ms).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-      value: Math.round(buckets.get(ms) * 100) / 100,
+  const { startISO, endISO, apiTf } = buildRange(timeframe);
+  const series = {};
+
+  for (const sym of list) {
+    const bars = await getHistoricalPrices(sym, startISO, endISO, apiTf); // same as portfolio
+   
+    if (!bars?.length) { series[sym] = []; continue; }
+
+    const first = bars[0].close;
+    const mapped = bars.map(b => ({
+      timestamp: new Date(b.t || b.date).getTime(),
+      value: mode === "percent" ? ((b.close / first) - 1) * 100 : b.close,
     }));
+    series[sym] = mapped;
   }
 
-  // 5D / 1M: use LAST bar of each UTC day per symbol, then sum
-  const perSymDay = new Map(); // symbol -> Map<dayMsUTC, { ts, close }>
-  for (const stock of valid) {
-    const shares = parseFloat(stock.shares) || 0;
-    if (shares <= 0) continue;
-    const dayMap = new Map();
-    for (const p of stock.prices) {
-      const tsRaw = p.t || p.date; if (!tsRaw) continue;
-      const close = +p.close; if (!Number.isFinite(close)) continue;
-      const ts = new Date(tsRaw).getTime();
-      const d = new Date(ts); d.setUTCHours(0, 0, 0, 0);
-      const dayKey = d.getTime();
-      const prev = dayMap.get(dayKey);
-      if (!prev || ts > prev.ts) dayMap.set(dayKey, { ts, close });
-    }
-    perSymDay.set(stock.symbol || Symbol(), { shares, dayMap });
-  }
+  res.json({ series, mode });
+});
 
-  const allDays = new Set();
-  for (const { dayMap } of perSymDay.values()) for (const k of dayMap.keys()) allDays.add(k);
-  const days = Array.from(allDays).sort((a, b) => a - b);
-
-  return days.map((dayMs) => {
-    let total = 0;
-    for (const { shares, dayMap } of perSymDay.values()) {
-      const rec = dayMap.get(dayMs);
-      if (rec) total += shares * rec.close;
-    }
-    return {
-      timestamp: dayMs,
-      date: new Date(dayMs).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-      value: Math.round(total * 100) / 100,
-    };
-  });
-}
 
 export default router;

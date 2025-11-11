@@ -5,11 +5,11 @@ export function useFetchAiNews(symbols: string[]) {
   const symbolsParam = symbols.join(',');
   useEffect(() => {
     if (!symbols || symbols.length === 0) {
-      console.log('⏭️ Skipping news fetch - no symbols');
+     // console.log('⏭️ Skipping news fetch - no symbols');
       setNews([]);
       return;
     }
-    fetch(`/api/ai-news/?symbols=${symbolsParam}`, {
+    fetch(`http://localhost:4000/api/ai-news/?symbols=${symbolsParam}`, {
       method: "GET",
       credentials: "include",
     })

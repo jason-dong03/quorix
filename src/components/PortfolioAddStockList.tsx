@@ -45,6 +45,7 @@ export const PortfolioAddStockList: React.FC<PortfolioAddStockListProps> = ({
                     <div className="d-flex align-items-center gap-3 mb-1">
                       <h5 className="mb-0">{stock.symbol}</h5>
                       <small className="text-muted">{stock.name}</small>
+                      <small className="badge bg-primary">{stock.sector}</small>
                     </div>
                     <small className="text-muted">
                       Last Updated:{" "}

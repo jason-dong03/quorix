@@ -8,20 +8,21 @@ interface PortfolioHoldingListProps {
   onSellClick: (stock: Holding) => void;
   onRemovePosition: (symbol: string, lots: Holding[]) => Promise<void>;
   modalID?: string;
+
 }
 
 export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({onBuyClick,onSellClick,onRemovePosition,modalID,}) => {
-  const {holdings:portfolio } = usePortfolio();
+  const {positions } = usePortfolio();
   const [expandedSymbol, setExpandedSymbol] = useState<string | null>(null);
   const toggleExpand = (symbol: string) => {
     setExpandedSymbol(expandedSymbol === symbol ? null : symbol);
   };
   const toWatchlistStock = (h: Holding): WatchlistStock => ({
-  symbol: h.symbol,
-  name: h.name,
-  last_price: Number(h.last_price),
-  last_change_pct: Number(h.last_change_pct),
-  sector : ""
+    symbol: h.symbol,
+    name: h.name,
+    last_price: Number(h.last_price),
+    last_change_pct: Number(h.last_change_pct),
+    sector : ""
   });
   const handleBuyClick = (stock: WatchlistStock) => {
     if (onBuyClick) {
@@ -33,40 +34,7 @@ export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({onBuy
       onSellClick(stock);
     }
   }
-  const uniqueHoldings = useMemo(() => {
-    const grouped = portfolio.reduce(
-      (acc: Record<string, Holding & { lots: Holding[] }>, holding) => {
-        const symbol = holding.symbol;
-
-        if (!acc[symbol]) {
-          acc[symbol] = {
-            ...holding,
-            lots: [holding],
-          };
-        } else {
-          acc[symbol].lots.push(holding);
-
-          const totalShares = acc[symbol].lots.reduce(
-            (sum, lot) => sum + Number(lot.shares),
-            0
-          );
-          const totalCost = acc[symbol].lots.reduce(
-            (sum, lot) => sum + Number(lot.shares) * Number(lot.bought_at),
-            0
-          );
-          acc[symbol].shares = totalShares;
-          acc[symbol].avg_cost = totalCost / totalShares;
-          acc[symbol].bought_at = holding.bought_at;
-          (acc[symbol] as any).totalCost = totalCost; //stores directly into object
-        }
-
-        return acc;
-      },
-      {}
-    );
-
-    return Object.values(grouped);
-  }, [portfolio]);
+ const uniqueHoldings = positions;
 
   return (
     <>
@@ -98,11 +66,13 @@ export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({onBuy
                     <div className="flex-grow-1">
                       <div className="d-flex align-items-center gap-3 mb-1">
                         <h5 className="mb-0">{stock.symbol}</h5>
-                        { (
+                          <span className="badge bg-primary">
+                            {stock.sector}
+                          </span>                    
                           <span className="badge bg-secondary">
                             {stock.lots.length} {stock.lots.length > 1? "lots": "lot"}
                           </span>
-                        )}
+                    
                       </div>
                       <small className="text-muted">{stock.name}</small>
                     </div>
@@ -117,7 +87,7 @@ export const PortfolioHoldingList: React.FC<PortfolioHoldingListProps> = ({onBuy
                         className={`d-flex align-items-center justify-content-end ${
                           isPositive ? "text-success" : "text-danger"
                         }`}
-                      >
+                      >              
                         {isPositive ? (
                           <TrendingUp size={20} className="me-1" />
                         ) : (

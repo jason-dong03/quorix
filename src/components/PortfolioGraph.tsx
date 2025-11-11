@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import {
-  Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis,
+  Area, AreaChart, CartesianGrid, Line, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import type { ChartData } from "../types";
-import { fetchPortfolioHistory } from "../data/cacheData";
+import { fetchBenchmarkData, fetchPortfolioHistory } from "../data/cacheData";
 import { usePortfolio } from "../context/PortfolioContext";
+import type { NameType, Payload, ValueType } from "recharts/types/component/DefaultTooltipContent";
 
 interface PortfolioGraphProps { timeframe: string; }
 
@@ -14,9 +15,63 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+ const [showSPY, setShowSPY] = useState<boolean>(() =>
+  JSON.parse(localStorage.getItem("cmp_spy") ?? "false")
+  );
+  const [showQQQ, setShowQQQ] = useState<boolean>(() =>
+    JSON.parse(localStorage.getItem("cmp_qqq") ?? "false")
+  );
+  const [showDIA, setShowDIA] = useState<boolean>(() =>
+    JSON.parse(localStorage.getItem("cmp_dia") ?? "false")
+  );
+
+  useEffect(() => { localStorage.setItem("cmp_spy", JSON.stringify(showSPY)); }, [showSPY]);
+  useEffect(() => { localStorage.setItem("cmp_qqq", JSON.stringify(showQQQ)); }, [showQQQ]);
+  useEffect(() => { localStorage.setItem("cmp_dia", JSON.stringify(showDIA)); }, [showDIA]);
+
+  const [bench, setBench] = useState<Record<string, {timestamp:number; value:number}[]>>({});
+
+
+  const [yMin, yMax] = React.useMemo(() => {
+    if (!chartData.length) return [0, 0];
+    let min = Infinity, max = -Infinity;
+    for (const d of chartData) {
+      const v = Number(d.value) || 0;
+      if (v < min) min = v;
+      if (v > max) max = v;
+    }
+    if (!isFinite(min) || !isFinite(max) || min === max) {
+      return [min || 0, (max || 0) + 1]; // avoid flat axis when all values equal
+    }
+    const pad = (max - min) * 0.06; // ~6% headroom/footroom
+    return [min - pad, max + pad];
+  }, [chartData]);
+  useEffect(() => {
+    const want = [
+      showSPY ? "SPY" : null,
+      showQQQ ? "QQQ" : null,
+      showDIA ? "DIA" : null,
+    ].filter(Boolean) as string[];
+
+    if (!want.length) {
+      setBench({});
+      return;
+    }
+    const load = async () => {
+      try {
+        const res = await fetchBenchmarkData(timeframe, want.join(","));       
+        setBench(res);
+      } catch (e) {
+        console.error("Failed to load benchmark data:", e);
+        setBench({});
+      } finally {
+        setLoading(false);
+      }
+    };
+  load();
+  }, [timeframe, showSPY, showQQQ, showDIA]);
+
   const is1D = timeframe === "1D";
-  //NOT A TRUE GRAPH REFLECTING BUYS, FIX TO SHOW SPIKE TRENDS
-  //INCLUDE VOLATILITY TOO
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -28,6 +83,7 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
           date: item.date,
           value: item.value,
         }));
+        //console.log(transformed);
         setChartData(transformed);
       } catch (e) {
         console.error("Failed to load portfolio history:", e);
@@ -39,7 +95,24 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
     load();
   }, [timeframe]);
 
-  function buildIntradayEtTicks(rows: { timestamp?: number }[]) {
+  const mergedData = React.useMemo(() => {
+    if (!chartData.length) return [];
+    const maps: Record<string, Map<number, number>> = {};
+    for (const [sym, arr] of Object.entries(bench)) {
+      const m = new Map<number, number>();
+      for (const p of arr ?? []) m.set(Number(p.timestamp), Number(p.value));
+      maps[sym] = m;
+    }
+    return chartData.map(p => ({
+      ...p,
+      ...(maps.SPY ? { SPY: maps.SPY.get(p.timestamp) } : {}),
+      ...(maps.QQQ ? { QQQ: maps.QQQ.get(p.timestamp) } : {}),
+      ...(maps.DIA ? { DIA: maps.DIA.get(p.timestamp) } : {}),
+    }));
+  }, [chartData, bench]);
+
+
+  function buildIntradayEtTicks(rows: { timestamp: number }[]) {
     if (!rows?.length) return [];
     const want = ["09:30","10:30","11:30","12:30","13:30","14:30","15:30","16:00"];
     const fmt = new Intl.DateTimeFormat("en-US", {
@@ -96,60 +169,217 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
   }
 
   const intradayTicks = is1D ? buildIntradayEtTicks(chartData) : undefined;
-  const categoryTicks =
-    !is1D && chartData.length
-      ? Array.from(new Set([chartData[0]?.date, chartData[chartData.length - 1]?.date].filter(Boolean)))
-      : undefined;
+
+  function getImprovedCategoryTicks(data: ChartData[]): string[] {
+    if (!data.length) return [];
+    
+    const totalPoints = data.length;
+    let tickCount: number;
+    
+    if (timeframe === '5D') {
+      tickCount = 5; 
+    } else if (timeframe === '1M') {
+      tickCount = 8;
+    } else {
+      tickCount = Math.min(10, totalPoints);
+    }
+    
+    const step = Math.floor(totalPoints / tickCount);
+    const ticks: string[] = [];
+    
+    for (let i = 0; i < totalPoints; i += step) {
+      ticks.push(data[i].date);
+    }
+    
+
+    if (ticks[ticks.length - 1] !== data[totalPoints - 1].date) {
+      ticks.push(data[totalPoints - 1].date);
+    }
+    
+    return ticks;
+  }
+
+
+const improvedCategoryTicks = !is1D && chartData.length 
+  ? getImprovedCategoryTicks(chartData)
+  : undefined;
 
   return (
     <div className="card chart-card mb-4">
+     <div className="d-flex justify-content-between align-items-center p-3 ps-4">
+      <div className="dropdown">
+        <button className="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          Portfolio 1
+        </button>
+        <ul className="dropdown-menu">
+          <li><button className="dropdown-item active">Portfolio 1</button></li>
+          <li><button className="dropdown-item disabled">Portfolio 2</button></li>
+          <li><button className="dropdown-item disabled">Create new…</button></li>
+        </ul>
+      </div>
+      <div className="d-flex align-items-center gap-3">
+        <div className="btn-group index-toggle-group" role="group" aria-label="Compare Indexes">
+          <button
+            type="button"
+            aria-pressed={showSPY}
+            className={`btn btn-sm index-btn spy ${showSPY ? "active" : ""}`}
+            onClick={() => setShowSPY((v) => !v)}
+          >
+            S&amp;P 500
+          </button>
+          <button
+            type="button"
+            aria-pressed={showQQQ}
+            className={`btn btn-sm index-btn qqq ${showQQQ ? "active" : ""}`}
+            onClick={() => setShowQQQ((v) => !v)}
+          >
+            Nasdaq
+          </button>
+          <button
+            type="button"
+            aria-pressed={showDIA}
+            className={`btn btn-sm index-btn dia ${showDIA ? "active" : ""}`}
+            onClick={() => setShowDIA((v) => !v)}
+          >
+            Dow Jones
+          </button>
+        </div>
+      </div>
+    </div>
+
       <div className="card-body p-4">
         <ResponsiveContainer width="100%" height={400}>
-          <AreaChart data={chartData}>
+          <AreaChart data={mergedData}>
             <defs>
               <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#0d6efd" stopOpacity={0.4} />
-                <stop offset="95%" stopColor="#0d6efd" stopOpacity={0} />
+                <stop offset="5%" stopColor="#0d6efd" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#0d6efd" stopOpacity={0.05} />
               </linearGradient>
+              
+              <pattern id="dots" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="1" fill="#0d6efd" opacity="0.3" />
+              </pattern>
             </defs>
-
-            <CartesianGrid strokeDasharray="3 3" stroke="#495057" opacity={0.3} />
-
             <XAxis
               dataKey={is1D ? "timestamp" : "date"}
               type={is1D ? "number" : "category"}
               scale={is1D ? "time" : undefined}
               domain={is1D ? ["dataMin", "dataMax"] : undefined}
-              ticks={is1D ? intradayTicks : categoryTicks}
-              allowDuplicatedCategory={false}
+              ticks={is1D ? intradayTicks : improvedCategoryTicks} // ← New function
               stroke="#6c757d"
               style={{ fontSize: "12px" }}
               tick={{ fill: "#6c757d" }}
+              angle={-45} 
+              textAnchor="end"
+              height={60}
               tickFormatter={(val: number | string) =>
                 is1D
                   ? new Date(val as number).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
-                  : (val as string)
+                  : new Date(val as string).toLocaleDateString("en-US", { month: 'short', day: 'numeric' })
               }
             />
 
             <YAxis
-              stroke="#6c757d"
-              style={{ fontSize: "12px" }}
+              yAxisId="left"
+              domain={[yMin, yMax]}
               tick={{ fill: "#6c757d" }}
-              tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+              stroke="#6c757d"
+              style={{ fontSize: 12 }}
+              tickFormatter={(v) => `$${v.toLocaleString(undefined,{ maximumFractionDigits: 0 })}`}
             />
 
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              tick={{ fill: "#6c757d" }}
+              stroke="#6c757d"
+              style={{ fontSize: 12 }}
+              domain={["dataMin - 2", "dataMax + 2"]} // small headroom
+              tickFormatter={(v) => `${v.toFixed(0)}%`}
+            />
+            <CartesianGrid strokeDasharray="3 3" stroke="#495057" opacity={0.3} />
             <Tooltip
-              contentStyle={{ backgroundColor: "#212529", border: "1px solid #495057", borderRadius: 8, color: "#fff" }}
-              labelFormatter={(label: number | string) =>
-                is1D
-                  ? new Date(label as number).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
-                  : (label as string)
-              }
-              formatter={(v: number) => [`$${v.toLocaleString()}`, "Portfolio Value"]}
+              contentStyle={{
+                backgroundColor: "#212529",
+                border: "1px solid #495057",
+                borderRadius: 8,
+                color: "#fff",
+              }}
+              labelFormatter={(label, payload) => {
+                const ts = payload?.[0]?.payload?.timestamp ?? (typeof label === "number" ? label : undefined);
+                if (!ts) return String(label);
+                return new Date(ts).toLocaleString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
+                  timeZone: "America/New_York",
+                });
+              }}
+              formatter={(val: ValueType, name: NameType, ctx: Payload<ValueType, NameType>) => {
+                const key = (ctx?.dataKey as string) ?? String(name);
+                if (key === 'value') {
+                  const formatted = `$${Number(val).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                  return [formatted, 'Portfolio'] as [React.ReactNode, React.ReactNode];
+                }
+                const formatted = `${Number(val).toFixed(2)}%`;
+                return [formatted, String(name)] as [React.ReactNode, React.ReactNode];
+              }}
             />
 
-            <Area type="monotone" dataKey="value" stroke="#0d6efd" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
+            <Area
+              yAxisId="left"
+              type="monotone"
+              dataKey="value"
+              stroke="#4d9eff"
+              strokeWidth={2}
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              fillOpacity={1}
+              fill="url(#dots)"
+              dot={false}
+              baseValue="dataMin"
+            />
+            {showSPY && (
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="SPY"  
+                stroke="#d4e0eeff"
+                strokeWidth={1.75}
+                dot={false}
+                connectNulls
+                name="S&P 500"
+              />
+            )}
+
+            {showQQQ && (
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="QQQ"
+                stroke="#ffd28a"
+                strokeWidth={1.75}
+                dot={false}
+                connectNulls
+                name="Nasdaq"
+              />
+            )}
+
+            {showDIA && (
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="DIA"
+                stroke="#9fe3c1"
+                strokeWidth={1.75}
+                dot={false}
+                connectNulls
+                name="Dow Jones"
+              />
+            )}
+
           </AreaChart>
         </ResponsiveContainer>
       </div>

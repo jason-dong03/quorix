@@ -2,6 +2,7 @@
 export interface Holding {
   name: string;
   symbol: string;
+  sector: string;
   last_price: number;
   last_change_pct: number;
   last_updated?: string;
@@ -32,7 +33,7 @@ export interface NewsItem {
 }
 
 export interface ChartData {
-  timestamp?: number;
+  timestamp: number;
   date: string;
   value: number;
 }
@@ -49,3 +50,10 @@ export interface AuthContextType {
   loading: boolean;
 }
 export type HoldingsTab = "holdings" | "watchlist" | "addstock";
+
+export type Position = Holding & {
+  lots: Holding[];
+  shares: number;        // summed over lots
+  avg_cost: number;      // weighted avg
+  totalCost: number;     // Σ(shares_i * bought_at_i)
+};

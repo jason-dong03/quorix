@@ -30,9 +30,9 @@ app.use(marketDataRoutes);
 app.use(priceCacheRoutes);
 app.use(newsCacheRoutes);
 app.listen(4000, () => {
-  console.log("auth server running on quorix-production.up.railway.app");
+  console.log("auth server running on localhost");
   //insertEODData();
 });
 
-startPriceUpdater();
-startNewsCleanup();
+//startPriceUpdater();
+//startNewsCleanup();

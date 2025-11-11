@@ -16,7 +16,7 @@ import { Insights } from "./components/Insights.tsx";
 import { QuickActions } from "./components/QuickActions.tsx";
 import { useAuth } from "./context/AuthContext.tsx";
 import { useNavigate } from "react-router-dom";
-import BuyStockModal from "./components/ BuyStockModal.tsx";
+import BuyStockModal from "./components/BuyStockModal.tsx";
 import { usePortfolio } from "./context/PortfolioContext.tsx";
 import { usePortfolioActions } from "./hooks/usePortfolioActions.ts";
 
@@ -38,17 +38,11 @@ const Dashboard: React.FC = () => {
     }
   }, [authLoading, user, navigate]);
 
-  const [showAlert, setShowAlert] = useState(false);
-  const [riskScore, setRiskScore] = useState(0);
-  const [timeframe, setTimeframe] = useState<string>("1M");
+  const [timeframe, setTimeframe] = useState<string>("1D");
   const [holdingsTab, setHoldingsTab] = useState<HoldingsTab>("holdings");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedStock, setSelectedStock] = useState<WatchlistStock | null>(null);
 
-  const handleSuccess = () => {
-    setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 5000);
-  };
 
   const handleBuyClick = (stock: WatchlistStock) => {
     setSelectedStock(stock);
@@ -86,14 +80,9 @@ const Dashboard: React.FC = () => {
 
   return (
     <>
-      {showAlert && (
-        <div className="alert alert-success text-center" role="alert">
-          Stock added successfully!
-        </div>
-      )}
-      <BuyStockModal stock={selectedStock} onSuccess={handleSuccess} />
+      <BuyStockModal stock={selectedStock} />
       <div className="portfolio-wrapper">
-        <Navbar risk_score={riskScore} />
+        <Navbar/>
         <div className="container-fluid p-4">
           <AINewsBar />
           <div className="row g-4">
@@ -142,7 +131,7 @@ const Dashboard: React.FC = () => {
             <div className="col-lg-3">
               <TodaysPerformance />
               <PortfolioStats />
-              <Insights updateRiskScore={setRiskScore} />
+              <Insights />
               <QuickActions />
             </div>
           </div>

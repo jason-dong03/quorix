@@ -1,45 +1,12 @@
 import { Brain } from "lucide-react";
-import {
-  herfindahlIndex,
-  numHoldingsRisk,
-  sectorConcentration,
-  getRiskScoreLabel,
-  getDiversificationPercentage,
-  getDiversificationPercentageColor,
-} from "../data/insightsData";
-import { useEffect } from "react";
+
 import { usePortfolio } from "../context/PortfolioContext";
 
-interface InsightsProp {
-  updateRiskScore: React.Dispatch<React.SetStateAction<number>>;
-}
-export const Insights: React.FC<InsightsProp> = ({
-  updateRiskScore,
-}) => {
 
-  const num = (v: any, d = 0) => {
-    const n = Number(v);
-    return Number.isFinite(n) ? n : d;
-  };
-  const {holdings, availableStocks: stocks_dict } = usePortfolio();
-  const HI          = num(herfindahlIndex(holdings, stocks_dict)) * 10;
-  const sectorScore = num(sectorConcentration(holdings, stocks_dict)) * 10;
-  const holdingRiskNum = numHoldingsRisk(holdings); // ensure this always returns a number
+export const Insights: React.FC = () => {
 
+  const {riskScoreLabel: risk_score_label, riskScore:risk_score, diversificationColor:diversification_color, diversificationPct: diversification} = usePortfolio();
 
-  const diversification = holdings.length ===0? 0 : getDiversificationPercentage(holdings, stocks_dict);
-  const diversification_color = getDiversificationPercentageColor(diversification);
-
-  const raw = holdings.length === 0? 0 : num(HI) * 0.35 + num(sectorScore) * 0.35 + num(holdingRiskNum) * 0.3;
-
-  const risk_score = Number(raw.toFixed(1)); 
-
-  useEffect(() => {
-    if(Number.isFinite(risk_score)){
-      updateRiskScore(Number(risk_score));
-    }
-  }, [risk_score, holdings, stocks_dict, updateRiskScore]);
-  const risk_score_label = getRiskScoreLabel(Number(risk_score));
   return (
     <>
       <div className="card stats-card stats-card-ai mb-4">

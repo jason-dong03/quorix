@@ -1,14 +1,18 @@
 import React from "react";
 import { Menu, User } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { getRiskScoreLabel } from "../data/insightsData";
+import { useLocation, Link } from "react-router-dom";
+import { usePortfolio } from "../context/PortfolioContext";
 
-interface NavBarProps {
-  risk_score: number;
-}
-const NavBar: React.FC<NavBarProps> = ({ risk_score }) => {
+
+const NavBar: React.FC = () => {
   const { user } = useAuth();
-  const risk_score_label = getRiskScoreLabel(Number(risk_score));
+  const location = useLocation();
+  const {riskScore} = usePortfolio();
+  function isActive(path: string) {
+    return location.pathname === path;
+  }
+
 
   if (!user) return null;
   return (
@@ -30,7 +34,7 @@ const NavBar: React.FC<NavBarProps> = ({ risk_score }) => {
           href="#"
         >
           <img src="/logo.png" className="text-primary nav-bar-logo"/>
-          <span>quorix+</span>
+          <span className="brand-text">quorix+</span>
         </a>
 
         <button
@@ -45,58 +49,54 @@ const NavBar: React.FC<NavBarProps> = ({ risk_score }) => {
           <Menu size={24} />
         </button>
         <div className="collapse navbar-collapse" id="mainNav">
-          {/* Center: Nav links */}
           <ul className="navbar-nav mx-lg-auto my-3 my-lg-0 gap-lg-3">
             <li className="nav-item">
-              <a
-                className="nav-link active fw-semibold"
-                aria-current="page"
-                href="#"
+              <Link
+                className={`nav-link fw-semibold ${isActive("/dashboard") ? "active text-white" : "text-secondary"}`}
+                to="/dashboard"
               >
                 Dashboard
-              </a>
+              </Link>
             </li>
+
             <li className="nav-item">
-              <a className="nav-link text-secondary" href="#">
+              <Link
+                className={`nav-link fw-semibold ${isActive("/portfolio") ? "active text-white" : "text-secondary"}`}
+                to="/portfolio"
+              >
                 Portfolio
-              </a>
+              </Link>
             </li>
             <li className="nav-item">
-              <a className="nav-link text-secondary" href="#">
-                Watchlist
-              </a>
+              <Link
+                className={`nav-link fw-semibold ${isActive("/leaderboard") ? "active text-white" : "text-secondary"}`}
+                to="/leaderboard"
+              >
+                Leaderboard
+              </Link>
             </li>
             <li className="nav-item">
-              <a className="nav-link text-secondary" href="#">
+              <Link
+                className={`nav-link fw-semibold ${isActive("/research") ? "active text-white" : "text-secondary"}`}
+                to="/research"
+              >
                 Research
-              </a>
+              </Link>
             </li>
-            <li className="nav-item">
-              <a className="nav-link text-secondary" href="#">
+             <li className="nav-item">
+              <Link
+                className={`nav-link fw-semibold ${isActive("/profile") ? "active text-white" : "text-secondary"}`}
+                to="/profile"
+              >
                 Profile
-              </a>
+              </Link>
             </li>
           </ul>
 
           <div className="d-flex align-items-center ms-lg-3">
             <div className="text-end d-none d-lg-block me-3">
               <div className="small text-light fw-semibold">{user.name}</div>
-              <div
-                className="small text-secondary"
-                style={{ fontSize: "0.75rem" }}
-              >
-                Risk:{" "}
-                <span
-                  className={`${
-                    risk_score_label === "High Risk"
-                      ? "text-danger"
-                      : "text-secondary"
-                  }`}
-                >
-                {risk_score}
-                </span>{" "}
-                / 10
-              </div>
+              <small className="small text-muted">Risk: {riskScore} / 10</small>
             </div>
 
             <div

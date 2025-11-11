@@ -1,6 +1,7 @@
+html { font-size: 70%; }
 .portfolio-wrapper {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0a0e27 100%);
+  background: linear-gradient(135deg, #070919 0%, #070919 50%, #070919 100%);
   color: #ffffff;
 }
 
@@ -470,6 +471,55 @@
 .custom-modal .btn-close-white:hover {
   opacity: 1;
 }
+.brand-text {
+  background: linear-gradient(90deg, #0d6efd 0%, #6f42c1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 25px;
+}
+/* container inherits your dark card style */
+.index-toggle-group .index-btn {
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(51, 65, 85, 1);
+  color: #94a3b8;               /* slate-400 */
+  padding: 4px 10px;
+  border-radius: 8px;
+  transition: all .15s ease;
+}
+
+.index-toggle-group .index-btn + .index-btn {
+  margin-left: 8px;            /* spacing without breaking btn-group look */
+}
+
+.index-toggle-group .index-btn:hover {
+  filter: brightness(1.08);
+}
+
+
+.index-toggle-group .index-btn.active {
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(59,130,246,0.25);
+}
+
+
+.index-toggle-group .index-btn.spy.active {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  box-shadow: 0 4px 12px rgba(59,130,246,0.35);
+}
+
+
+.index-toggle-group .index-btn.qqq.active {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  box-shadow: 0 4px 12px rgba(245,158,11,0.35);
+}
+
+
+.index-toggle-group .index-btn.dia.active {
+  background: linear-gradient(135deg, #10b981, #34d399);
+  box-shadow: 0 4px 12px rgba(16,185,129,0.35);
+}
 
 @keyframes fadeIn {
   from {
@@ -536,15 +586,15 @@
   }
 }
 
-@media (max-width: 725px) {
+@media (max-width: 992px) {
   .news-card h5 {
     font-size: clamp(1rem, 2.5vw, 1.5rem);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     display: block;
-    min-width: 280px;
-    max-width: 280px;
+    min-width: 30rem;
+    max-width: 30rem;
   }
 
   .news-card .badge,

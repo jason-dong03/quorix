@@ -75,11 +75,11 @@ export function numHoldingsRisk(holdings: Holding[]) {
     : 1;
 }
 export function getRiskScoreLabel(risk_score: number): string {
-  if (risk_score <= 2) return "Very Low Risk";
-  if (risk_score <= 4) return "Low Risk";
-  if (risk_score <= 6) return "Moderate Risk";
-  if (risk_score <= 8) return "Moderate-High Risk";
-  return "High Risk";
+  if (risk_score <= 2) return "Very Low";
+  if (risk_score <= 4) return "Low";
+  if (risk_score <= 6) return "Moderate";
+  if (risk_score <= 8) return "Moderate-High";
+  return "High";
 }
 export function getDiversificationPercentage(
   holdings: Holding[],

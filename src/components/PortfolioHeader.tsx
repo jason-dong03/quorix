@@ -25,7 +25,6 @@ export const PortfolioHeader: React.FC<PortfolioHeaderProps> = ({
           <div className="d-flex align-items-end justify-content-between">
             <div>
               <div className="d-flex align-items-center text-muted mb-2">
-                <Sparkles size={16} className="me-2" />
                 <small>Total Portfolio Value</small>
               </div>
               <h1 className="display-3 fw-bold mb-3">
@@ -38,21 +37,19 @@ export const PortfolioHeader: React.FC<PortfolioHeaderProps> = ({
                   }
                 )}
               </h1>
-              <div className="d-flex align-items-center gap-3">
+              <div className="d-flex flex-row align-items-center gap-3">
                 <div
                   className={`d-flex align-items-center ${
                     todayGain > 0 ? "text-success" : todayGain ===0? "text-muted": "text-danger"
                   } fs-4`}
                 >
-                  {todayGain > 0 ? (
-                    <>
-                      <TrendingUp size={24} className="me-2" />
-                    </>
+                
+                  <span className={`badge ${todayGain>0?"bg-success": "bg-danger-badge"}`}>
+                    {todayGain > 0 ? ( <TrendingUp size={24} className="me-2" />      
                   ) : todayGain === 0? (<></>) : (
                     <TrendingDown size={24} className="me-2" />
                   )}
-                  <span className="fw-semibold">
-                    {todayGain > 0 ? "+" : todayGain ===0? "" :"-"}$
+                  {todayGain > 0 ? "+" : todayGain ===0? "" :"-"}$
                     {Math.abs(todayGain).toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
@@ -62,17 +59,17 @@ export const PortfolioHeader: React.FC<PortfolioHeaderProps> = ({
                 <span
                   className={`${
                     todayGainPct > 0 ? "text-success" : Number.isNaN(todayGainPct)? "text-muted" :"text-danger"
-                  } fs-4 fw-semibold`}
+                  } fs-5 fw-semibold`}
                 >
                   {todayGainPct > 0 ? "+" : ""}
                  {(Number.isFinite(Number(todayGainPct)) ? todayGainPct.toLocaleString(
                   undefined,{minimumFractionDigits: 2,maximumFractionDigits: 2,}) : 0)}%
                 </span>
-                <small className="text-muted">Today</small>
+                <span className="text-muted pt-1">Today</span>
               </div>
             </div>
 
-            <div className="btn-group" role="group">
+            <div className="btn-group mt-4" role="group">
               {["1D", "5D", "1M"].map((tf) => (
                 <button
                   key={tf}

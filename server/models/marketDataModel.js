@@ -66,6 +66,7 @@ export async function fetchUserHoldings(userId) {
     SELECT 
       t.name,
       t.symbol,
+      t.sector,
       m.last_price,
       m.last_change_pct,
       m.last_updated,
@@ -81,6 +82,17 @@ export async function fetchUserHoldings(userId) {
     WHERE h.user_id = $1;
   `;
   const res = await query(sql, [userId]);
+  return res.rows;
+}
+export async function fetchUserHoldingsByDate(userId){
+  const sql = `
+    SELECT symbol, shares, bought_at, updated_at
+    FROM holdings
+    WHERE user_id = $1
+    ORDER BY updated_at ASC;
+  `;
+  const res = await query(sql, [userId]);
+
   return res.rows;
 }
 

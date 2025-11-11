@@ -14,14 +14,14 @@ router.get("/api/ai-news", async (req, res)=>{
         const symbolArray = symbols.split(',');
         //check first if its in cache, if not fetch a batch from API 
         //API fetches : a batch of 6 
-        console.log(symbolArray);
+        //console.log(symbolArray);
         const allNews = [];
         const fetchNewsFromClaudeList = [] ;
         for(const s of symbolArray){
-            console.log(`Fetching news for ${s}...`);
+            //console.log(`Fetching news for ${s}...`);
             const news = await getNewsFromCache(s);
             if(news.length > 0){//cache hit
-                console.log(`news cache hit for ${s}!`);
+                //console.log(`news cache hit for ${s}!`);
                 allNews.push(...news);
             }else{
                 console.log(`news cache missed for ${s}, adding ${s} to list that fetches from claude...`);
