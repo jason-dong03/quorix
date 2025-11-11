@@ -86,18 +86,14 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
             .filter(p => isRegularSessionET(p.timestamp))               // regular hours only
             .filter(p => wantedTs.has(p.timestamp));                    // align to your X-axis points
         }
-   
-        setBench(res);
+        setBench(cleaned);
       } catch (e) {
         console.error("Failed to load benchmark data:", e);
         setBench({});
-      } finally {
-        setLoading(false);
       }
     };
   load();
-  }, [timeframe, showSPY, showQQQ, showDIA]);
-  console.log("first chartData point:", new Date(chartData[0]?.timestamp).toLocaleString("en-US",{timeZone:"America/New_York"}));
+  }, [timeframe, showSPY, showQQQ, showDIA,chartData]);
   const is1D = timeframe === "1D";
   useEffect(() => {
     const load = async () => {
