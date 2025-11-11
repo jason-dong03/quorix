@@ -48,21 +48,22 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
     return minutes >= 570 && minutes <= 960; // 09:30 (570) to 16:00 (960)
   };
 
+  const yDomain = React.useMemo(() => {
+  if (!chartData.length) return [0, 0];
+  let min = Infinity, max = -Infinity;
+  for (const d of chartData) {
+    const v = Number(d.value) || 0;
+    if (v < min) min = v;
+    if (v > max) max = v;
+  }
+  if (!isFinite(min) || !isFinite(max) || min === max) {
+    return [min || 0, (max || 0) + 1];
+  }
+  const pad = (max - min) * 0.06;
+  return [min - pad, max + pad];
+}, [chartData]);
 
-  const [yMin, yMax] = React.useMemo(() => {
-    if (!chartData.length) return [0, 0];
-    let min = Infinity, max = -Infinity;
-    for (const d of chartData) {
-      const v = Number(d.value) || 0;
-      if (v < min) min = v;
-      if (v > max) max = v;
-    }
-    if (!isFinite(min) || !isFinite(max) || min === max) {
-      return [min || 0, (max || 0) + 1]; // avoid flat axis when all values equal
-    }
-    const pad = (max - min) * 0.06; // ~6% headroom/footroom
-    return [min - pad, max + pad];
-  }, [chartData]);
+const [yMin, yMax] = yDomain;
   useEffect(() => {
     const want = [
       showSPY ? "SPY" : null,
