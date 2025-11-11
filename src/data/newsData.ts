@@ -9,7 +9,7 @@ export function useFetchAiNews(symbols: string[]) {
       setNews([]);
       return;
     }
-    fetch(`http://localhost:4000/api/ai-news/?symbols=${symbolsParam}`, {
+    fetch(`/api/ai-news/?symbols=${symbolsParam}`, {
       method: "GET",
       credentials: "include",
     })
