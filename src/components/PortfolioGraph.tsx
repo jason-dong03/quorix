@@ -32,6 +32,23 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
   const [bench, setBench] = useState<Record<string, {timestamp:number; value:number}[]>>({});
 
 
+  const toMs = (t:number) => (t > 1e12 ? t : t * 1000);
+
+  const isRegularSessionET = (ts:number) => {
+    const d = new Date(ts);
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).formatToParts(d);
+    const hh = Number(parts.find(p => p.type === "hour")!.value);
+    const mm = Number(parts.find(p => p.type === "minute")!.value);
+    const minutes = hh * 60 + mm;
+    return minutes >= 570 && minutes <= 960; // 09:30 (570) to 16:00 (960)
+  };
+
+
   const [yMin, yMax] = React.useMemo(() => {
     if (!chartData.length) return [0, 0];
     let min = Infinity, max = -Infinity;
@@ -59,7 +76,17 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
     }
     const load = async () => {
       try {
-        const res = await fetchBenchmarkData(timeframe, want.join(","));       
+        const res = await fetchBenchmarkData(timeframe, want.join(","));    
+        const wantedTs = new Set(chartData.map(p => p.timestamp));
+
+        const cleaned: Record<string, {timestamp:number; value:number}[]> = {};
+        for (const [sym, arr] of Object.entries(res)) {
+          cleaned[sym] = (arr ?? [])
+            .map(p => ({ timestamp: toMs(Number(p.timestamp)), value: Number(p.value) }))
+            .filter(p => isRegularSessionET(p.timestamp))               // regular hours only
+            .filter(p => wantedTs.has(p.timestamp));                    // align to your X-axis points
+        }
+   
         setBench(res);
       } catch (e) {
         console.error("Failed to load benchmark data:", e);
@@ -70,7 +97,7 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
     };
   load();
   }, [timeframe, showSPY, showQQQ, showDIA]);
-
+  console.log("first chartData point:", new Date(chartData[0]?.timestamp).toLocaleString("en-US",{timeZone:"America/New_York"}));
   const is1D = timeframe === "1D";
   useEffect(() => {
     const load = async () => {
@@ -78,12 +105,14 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
       setError(null);
       try {
         const history = await fetchPortfolioHistory(timeframe);
-        const transformed: ChartData[] = history.map((item: any) => ({
-          timestamp: Number(item.timestamp) || new Date(item.date).getTime(),
-          date: item.date,
-          value: item.value,
-        }));
-        //console.log(transformed);
+        const transformed: ChartData[] = history
+          .map((item:any) => ({
+            timestamp: toMs(Number(item.timestamp) || new Date(item.date).getTime()),
+            date: item.date,
+            value: Number(item.value),
+          }))
+          .filter(p => timeframe === "1D" ? isRegularSessionET(p.timestamp) : true);
+
         setChartData(transformed);
       } catch (e) {
         console.error("Failed to load portfolio history:", e);
@@ -198,8 +227,6 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
     
     return ticks;
   }
-
-
 const improvedCategoryTicks = !is1D && chartData.length 
   ? getImprovedCategoryTicks(chartData)
   : undefined;
