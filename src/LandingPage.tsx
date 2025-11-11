@@ -4,7 +4,7 @@ import "./css/LandingPage.css";
 
 const LandingPage: React.FC = () => {
   const handleGoogleSignIn = () => {
-    window.location.href = `auth/google`;
+    window.location.href = `/auth/google`;
   };
 
   return (

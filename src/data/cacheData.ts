@@ -14,7 +14,7 @@ export const fetchPortfolioHistory = async (
 ): Promise<ChartData[]> => {
   try {
     const response = await fetch(
-      `api/portfolio-history?timeframe=${timeframe}`,
+      `/api/portfolio-history?timeframe=${timeframe}`,
       {
         method: 'GET',
         credentials: 'include',
@@ -39,7 +39,7 @@ export const fetchBenchmarkData = async(timeframe:string, symbols: string) =>{
 
   try{
     const response = await fetch(
-      `api/benchmarks?timeframe=${timeframe}&symbols=${symbols}&mode=percent`,{
+      `/api/benchmarks?timeframe=${timeframe}&symbols=${symbols}&mode=percent`,{
         method: 'GET',
         credentials: 'include',
       } );
