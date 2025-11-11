@@ -34,5 +34,5 @@ app.listen(4000, () => {
   //insertEODData();
 });
 
-//startPriceUpdater();
-//startNewsCleanup();
+startPriceUpdater();
+startNewsCleanup();
