@@ -1,4 +1,4 @@
-import { Sparkles, TrendingDown, TrendingUp } from "lucide-react";
+import {TrendingDown, TrendingUp } from "lucide-react";
 import {
   getPortfolioTodayGain,
   getPortfolioTodayGainPct,

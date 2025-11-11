@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { TrendingDown, TrendingUp, ChevronDown, ChevronUp } from "lucide-react";
 import type { Holding, WatchlistStock } from "../types";
 import { usePortfolio } from "../context/PortfolioContext";

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, TrendingDown, Zap, Brain, Target, Eye, Bell, Search, Filter, MoreVertical, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { TrendingUp, Zap, Brain, Target, Eye, Bell, Search, Filter, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import NavBar from './components/NavBar';
 
@@ -10,7 +10,7 @@ import { useAuth } from './context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { usePortfolio } from './context/PortfolioContext';
 import { getStockColor } from './utils/stockColor';
-import { getNumHoldings, getPortfolioTodayGain, getPortfolioTodayGainPct, getPortfolioTotalReturn, getPortfolioTotalReturnPct, getPortfolioTotalValue } from './data/dashboardCalculationFunctions';
+import { getNumHoldings, getPortfolioTodayGainPct, getPortfolioTotalReturn, getPortfolioTotalReturnPct, getPortfolioTotalValue } from './data/dashboardCalculationFunctions';
 import { PortfolioHoldingList } from './components/PortfolioHoldingList';
 import type { WatchlistStock } from './types';
 import { usePortfolioActions } from './hooks/usePortfolioActions';
