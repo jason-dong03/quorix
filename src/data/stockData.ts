@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { WatchlistStock, Holding } from "../types";
+import type { WatchlistStock, Holding, MarketSentiment } from "../types";
 
 export function useFetchStockData() {
   const [availableStocks, setAvailableStocks] = useState<WatchlistStock[]>([]);
@@ -113,4 +113,39 @@ export async function sellHoldingStock(symbol: string, shares:number, bought_at:
   });
   const result = await res.json();
   return result.success;
+}
+
+
+export function useFetchMarketSentiment() {
+  const [sentiment, setSentiment] = useState<MarketSentiment | null>(null);
+  useEffect(() => {
+    fetch(`/api/market-sentiment`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        setSentiment({
+          sp500: data.sp500 ?? null,
+          nasdaq: data.nasdaq ?? null,
+          dow: data.dow ?? null,
+          updated_at: data.updated_at,
+        });
+
+      })
+      .catch((err) => {
+        console.error("Failed to fetch market sentiment", err);
+        setSentiment(null);
+      })
+  }, []);
+  useEffect(() => {
+    console.log("sentiment updated:", sentiment);
+  }, [sentiment]);
+  
+  return { sentiment };
 }

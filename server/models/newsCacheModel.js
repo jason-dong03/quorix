@@ -41,7 +41,7 @@ OUTPUT (JSON array only, no markdown):
 
 CRITICAL RULES:
 1. Return ONLY valid JSON array, no markdown code blocks
-2. All source URLs must be real, verifiable, publicly accessible
+2. All source URLs must be REAL, verifiable, publicly accessible, and as recent as possible
 3. news_date must be ISO 8601 format (YYYY-MM-DDTHH:MM:SSZ)
 4. Sort by relevance descending
 5. Return exactly 6 articles `;

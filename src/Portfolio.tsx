@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, Zap, Brain, Target, Eye, Bell, Search, Filter, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { TrendingUp, Zap, Brain, Target, Eye, Bell, Search, Filter, ArrowUpRight, ArrowDownRight, TrendingDown } from 'lucide-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import NavBar from './components/NavBar';
+import NavBar from './components/Shared/NavBar';
 
 import "./css/Portfolio.css";
 import "./css/Dashboard.css";
@@ -15,7 +15,9 @@ import { PortfolioHoldingList } from './components/PortfolioHoldingList';
 import type { WatchlistStock } from './types';
 import { usePortfolioActions } from './hooks/usePortfolioActions';
 import BuyStockModal from './components/BuyStockModal';
-import { PortfolioGraph } from './components/PortfolioGraph';
+import { PortfolioGraph } from './components/Shared/PortfolioGraph';
+import HoldingTrends from './components/PortfolioPage/TopGainers';
+import MarketSentiment from './components/PortfolioPage/MarketSentiment';
 
 
 interface MarketStock {
@@ -129,17 +131,17 @@ const PortfolioDashboard: React.FC = () => {
                 <Zap size={24} className="text-primary" />
               </div>
               <h2 className="text-white fw-bold mb-2" style={{ fontSize: '3rem' }}>${totalValue}</h2>
-              <p className="text-primary mb-0" style={{ fontSize: '0.875rem' }}>+{totalChangePercent.toFixed(2)}% today</p>
+              <p className="text-primary mb-0" style={{ fontSize: '0.875rem' }}>{totalChangePercent > 0? "+" : ""}{totalChangePercent.toFixed(2)}% today</p>
             </div>
           </div>
           <div className="col-md-3">
-            <div className="stat-card stat-card-green">
+            <div className={`stat-card ${Number(totalGain) > 0? "stat-card-green": "stat-card-red"}`}>
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <span className="text-white-50" style={{ fontSize: '0.875rem' }}>Total Gain</span>
-                <TrendingUp size={24} className="text-success" />
+                {Number(totalGain) > 0?<TrendingUp size={24} className="text-success" />:<TrendingDown size={24} className="text-danger" />}
               </div>
               <h2 className="text-white fw-bold mb-2" style={{ fontSize: '3rem' }}>{Number(totalGain) > 0? "+": "-"}${Math.abs(Number(totalGain))}</h2>
-              <p className={`text-success mb-0`} style={{ fontSize: '0.875rem' }}>{Number(totalGainPct)>0? "+" : ""}{totalGainPct}%</p>
+              <p className={`${Number(totalGainPct) > 0? "text-success":"text-danger"} mb-0`} style={{ fontSize: '0.875rem' }}>{Number(totalGainPct)>0? "+" : ""}{totalGainPct}%</p>
             </div>
           </div>
           
@@ -195,21 +197,8 @@ const PortfolioDashboard: React.FC = () => {
             <PortfolioGraph timeframe={timeframe}/>
         </div>
           {/* Holdings Section */}
-        <div>
+        <div className='holdings-list'>
             <h3 className="text-white fw-bold mb-3">Stocks</h3>
-
-            {/* Search */}
-            <div className="position-relative mb-3">
-              <Search className="position-absolute text-white-50" size={20} style={{ left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
-              <input
-                type="text"
-                placeholder="Search stocks..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="search-input"
-              />
-            </div>
-
             {/* Tabs */}
             <div className="d-flex gap-2 p-2 mb-3" style={{ background: 'rgba(15, 23, 42, 0.5)', borderRadius: '12px', border: '1px solid rgba(51, 65, 85, 1)' }}>
               <button
@@ -235,17 +224,6 @@ const PortfolioDashboard: React.FC = () => {
                 Top Gainers
               </button>
               <button
-                onClick={() => setActiveTab('trending')}
-                className={`tab-btn ${activeTab === 'trending' ? 'active' : ''}`}
-                style={activeTab === 'trending' ? {
-                  background: 'linear-gradient(90deg, #f59e0b, #d97706)',
-                  color: 'white',
-                  boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
-                } : {}}
-              >
-                Trending
-              </button>
-              <button
                 onClick={() => setActiveTab('losers')}
                 className={`tab-btn ${activeTab === 'losers' ? 'active' : ''}`}
                 style={activeTab === 'losers' ? {
@@ -265,137 +243,11 @@ const PortfolioDashboard: React.FC = () => {
                 onRemovePosition={sellAllLots}
                 modalID="#staticBackdrop"/>
              }
-            {/* Top Gainers Content */}
-            {activeTab === 'gainers' && topGainers.map((stock, idx) => (
-              <div key={idx} className="stock-card mb-3" style={{ borderColor: 'rgba(16, 185, 129, 0.5)' }}>
-                <div className="d-flex justify-content-between align-items-center">
-                  <div className="d-flex align-items-center gap-3">
-                    <div 
-                      className="d-flex align-items-center justify-content-center text-white fw-bold rounded"
-                      style={{ 
-                        width: '56px', 
-                        height: '56px', 
-                        background: 'linear-gradient(135deg, #10b981, #059669)',
-                        boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)',
-                        fontSize: '1.125rem'
-                      }}
-                    >
-                      {stock.symbol.substring(0, 2)}
-                    </div>
-                    <div>
-                      <h5 className="text-white fw-bold mb-1">{stock.symbol}</h5>
-                      <p className="text-white-50 mb-0" style={{ fontSize: '0.875rem' }}>{stock.name}</p>
-                    </div>
-                  </div>
-
-                  <div className="d-flex align-items-center gap-4">
-                    <div className="text-end">
-                      <h4 className="text-white fw-bold mb-1">${stock.price}</h4>
-                      <div className="d-flex align-items-center justify-content-end gap-2">
-                        <ArrowUpRight size={16} className="text-success" />
-                        <span className="fw-semibold text-success">+{stock.change}%</span>
-                      </div>
-                    </div>
-                    <div className="text-end">
-                      <p className="text-white-50 mb-0" style={{ fontSize: '0.75rem' }}>Volume</p>
-                      <p className="text-white mb-0" style={{ fontSize: '0.875rem' }}>{stock.volume}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {/* Trending Content */}
-            {activeTab === 'trending' && trending.map((stock, idx) => (
-              <div key={idx} className="stock-card mb-3" style={{ borderColor: 'rgba(245, 158, 11, 0.5)' }}>
-                <div className="d-flex justify-content-between align-items-center">
-                  <div className="d-flex align-items-center gap-3">
-                    <div 
-                      className="d-flex align-items-center justify-content-center text-white fw-bold rounded"
-                      style={{ 
-                        width: '56px', 
-                        height: '56px', 
-                        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                        boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)',
-                        fontSize: '1.125rem'
-                      }}
-                    >
-                      {stock.symbol.substring(0, 2)}
-                    </div>
-                    <div>
-                      <h5 className="text-white fw-bold mb-1">{stock.symbol}</h5>
-                      <p className="text-white-50 mb-0" style={{ fontSize: '0.875rem' }}>{stock.name}</p>
-                    </div>
-                  </div>
-
-                  <div className="d-flex align-items-center gap-4">
-                    <div className="text-end">
-                      <h4 className="text-white fw-bold mb-1">${stock.price}</h4>
-                      <div className="d-flex align-items-center justify-content-end gap-2">
-                        {stock.change >= 0 ? (
-                          <ArrowUpRight size={16} className="text-success" />
-                        ) : (
-                          <ArrowDownRight size={16} className="text-danger" />
-                        )}
-                        <span className={`fw-semibold ${stock.change >= 0 ? 'text-success' : 'text-danger'}`}>
-                          {stock.change >= 0 ? '+' : ''}{stock.change}%
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-end">
-                      <p className="text-white-50 mb-0" style={{ fontSize: '0.75rem' }}>Volume</p>
-                      <p className="text-white mb-0" style={{ fontSize: '0.875rem' }}>{stock.volume}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {/* Top Losers Content */}
-            {activeTab === 'losers' && topLosers.map((stock, idx) => (
-              <div key={idx} className="stock-card mb-3" style={{ borderColor: 'rgba(239, 68, 68, 0.5)' }}>
-                <div className="d-flex justify-content-between align-items-center">
-                  <div className="d-flex align-items-center gap-3">
-                    <div 
-                      className="d-flex align-items-center justify-content-center text-white fw-bold rounded"
-                      style={{ 
-                        width: '56px', 
-                        height: '56px', 
-                        background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                        boxShadow: '0 4px 14px rgba(239, 68, 68, 0.3)',
-                        fontSize: '1.125rem'
-                      }}
-                    >
-                      {stock.symbol.substring(0, 2)}
-                    </div>
-                    <div>
-                      <h5 className="text-white fw-bold mb-1">{stock.symbol}</h5>
-                      <p className="text-white-50 mb-0" style={{ fontSize: '0.875rem' }}>{stock.name}</p>
-                    </div>
-                  </div>
-
-                  <div className="d-flex align-items-center gap-4">
-                    <div className="text-end">
-                      <h4 className="text-white fw-bold mb-1">${stock.price}</h4>
-                      <div className="d-flex align-items-center justify-content-end gap-2">
-                        <ArrowDownRight size={16} className="text-danger" />
-                        <span className="fw-semibold text-danger">{stock.change}%</span>
-                      </div>
-                    </div>
-                    <div className="text-end">
-                      <p className="text-white-50 mb-0" style={{ fontSize: '0.75rem' }}>Volume</p>
-                      <p className="text-white mb-0" style={{ fontSize: '0.875rem' }}>{stock.volume}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+            {activeTab === 'gainers' && <HoldingTrends mode={true}/>}
+            {activeTab === 'losers' && <HoldingTrends mode={false}/>}
           </div>
         </div>
-
-        {/* Right Sidebar */}
         <div className="col-lg-4">
-          {/* Allocation Pie Chart */}
           <div className="sidebar-card mb-4">
             <h4 className="text-white fw-bold mb-4">Asset Allocation</h4>
             <div style={{ height: '224px' }} className="mb-4">
@@ -426,8 +278,8 @@ const PortfolioDashboard: React.FC = () => {
                 </Pie>
                <Tooltip
                 contentStyle={{
-                    backgroundColor: '#0f172a',
-                    border: '1px solid #3b82f6',
+                    backgroundColor: '#779aebff',
+                    border: '1px solid #17335fff',
                     borderRadius: 8,
                     color: '#fff',
                 }}
@@ -508,33 +360,7 @@ const PortfolioDashboard: React.FC = () => {
           </div>
 
           {/* Market Sentiment */}
-          <div className="sidebar-card mb-4">
-            <div className="d-flex align-items-center gap-2 mb-3">
-              <Eye size={20} className="text-white-50" />
-              <h4 className="text-white fw-bold mb-0">Market Sentiment</h4>
-            </div>
-            
-            <div className="mb-2 d-flex justify-content-between">
-              <span className="text-white-50" style={{ fontSize: '0.875rem' }}>S&P 500</span>
-              <span className="text-success fw-semibold">+0.85%</span>
-            </div>
-            <div className="mb-2 d-flex justify-content-between">
-              <span className="text-white-50" style={{ fontSize: '0.875rem' }}>NASDAQ</span>
-              <span className="text-success fw-semibold">+1.23%</span>
-            </div>
-            <div className="mb-4 d-flex justify-content-between">
-              <span className="text-white-50" style={{ fontSize: '0.875rem' }}>DOW</span>
-              <span className="text-danger fw-semibold">-0.32%</span>
-            </div>
-
-            <div className="pt-3" style={{ borderTop: '1px solid rgba(51, 65, 85, 1)' }}>
-              <div className="d-flex align-items-center gap-2 mb-2">
-                <div className="bg-success rounded-circle" style={{ width: '8px', height: '8px', animation: 'pulse 2s infinite' }}></div>
-                <span className="text-white fw-medium" style={{ fontSize: '0.875rem' }}>Market Open</span>
-              </div>
-              <p className="text-white-50 mb-0" style={{ fontSize: '0.75rem' }}>Trading active • 6h 24m remaining</p>
-            </div>
-          </div>
+          <MarketSentiment/>
 
           {/* Action Button */}
           <button className="btn w-100 text-white fw-bold py-3 rounded-3" style={{

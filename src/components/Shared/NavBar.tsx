@@ -1,8 +1,8 @@
 import React from "react";
 import { Menu, User } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { useLocation, Link } from "react-router-dom";
-import { usePortfolio } from "../context/PortfolioContext";
+import { usePortfolio } from "../../context/PortfolioContext";
 
 
 const NavBar: React.FC = () => {

@@ -30,9 +30,9 @@ app.use(marketDataRoutes);
 app.use(priceCacheRoutes);
 app.use(newsCacheRoutes);
 app.listen(4000, () => {
-  console.log("auth server running on localhost");
+  console.log(`auth server running on ${process.env.NODE_ENV} mode`);
   //insertEODData();
 });
 
-startPriceUpdater();
-startNewsCleanup();
+//startPriceUpdater();
+//startNewsCleanup();

@@ -393,6 +393,11 @@ html { font-size: 80%; }
   background-color: rgba(220, 53, 69) !important;
   color: #dc3545 !important;
 }
+.market-open {
+  background-color: rgba(25, 135, 84, 1) !important;
+  color: #198754 !important;
+}
+
 
 .news-grid::-webkit-scrollbar,
 .holdings-list::-webkit-scrollbar {

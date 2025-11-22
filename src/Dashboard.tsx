@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./css/Dashboard.css";
 import type { HoldingsTab, WatchlistStock } from "./types.ts";
-import AINewsBar from "./components/AINewsBar.tsx";
-import Navbar from "./components/NavBar.tsx";
+import AINewsBar from "./components/DashboardPage/AINewsBar.tsx";
+import Navbar from "./components/Shared/NavBar.tsx";
 import { PortfolioHeader } from "./components/PortfolioHeader.tsx";
-import { PortfolioGraph } from "./components/PortfolioGraph.tsx";
-import { PortfolioTabs } from "./components/PortfolioTabs.tsx";
+import { PortfolioGraph } from "./components/Shared/PortfolioGraph.tsx";
+import { DashboardTabs } from "./components/DashboardPage/DashboardTabs.tsx";
 import { PortfolioHoldingList } from "./components/PortfolioHoldingList.tsx";
 import { PortfolioWatchlist } from "./components/PortfolioWatchlist.tsx";
 import { PortfolioAddStockList } from "./components/PortfolioAddStockList.tsx";
@@ -95,7 +95,7 @@ const Dashboard: React.FC = () => {
 
               <div className="card holdings-card">
                 <div className="card-body p-4">
-                  <PortfolioTabs
+                  <DashboardTabs
                     holdingsTab={holdingsTab}
                     setHoldingsTab={setHoldingsTab}
                     searchQuery={searchQuery}

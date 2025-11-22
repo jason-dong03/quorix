@@ -1,13 +1,13 @@
 import { usePortfolio }
-from "../context/PortfolioContext.tsx";
-import type { HoldingsTab } from "../types.ts"; 
+from "../../context/PortfolioContext.tsx";
+import type { HoldingsTab } from "../../types.ts"; 
   
-interface PortfolioTabsProps { 
+interface DashboardTabsProps { 
     holdingsTab: string; setHoldingsTab: React.Dispatch<React.SetStateAction<HoldingsTab>>; 
     searchQuery: string; setSearchQuery: React.Dispatch<React.SetStateAction<string>>; 
     filteredStocks: any[];
   } 
-export const PortfolioTabs: React.FC<PortfolioTabsProps> = 
+export const DashboardTabs: React.FC<DashboardTabsProps> = 
 ({ holdingsTab,
   setHoldingsTab,
   searchQuery, 

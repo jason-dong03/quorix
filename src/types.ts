@@ -36,6 +36,7 @@ export interface ChartData {
   timestamp: number;
   date: string;
   value: number;
+  dayStart?: number;
 }
 
 export interface User {
@@ -56,4 +57,17 @@ export type Position = Holding & {
   shares: number;        // summed over lots
   avg_cost: number;      // weighted avg
   totalCost: number;     // Σ(shares_i * bought_at_i)
+};
+
+type IndexSentiment = {
+  symbol: string;
+  last_change_pct: number;
+  last_price: number;
+};
+
+export type MarketSentiment = {
+  sp500: IndexSentiment | null;
+  nasdaq: IndexSentiment | null;
+  dow: IndexSentiment | null;
+  updated_at: string;
 };

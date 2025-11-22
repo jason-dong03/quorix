@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { Brain, ChevronRight, ChevronLeft, TrendingUp, TrendingDown } from "lucide-react";
-import { usePortfolio } from "../context/PortfolioContext";
+import { usePortfolio } from "../../context/PortfolioContext";
 
 function AINewsBar() {
   const [newsIndex, setNewsIndex] = useState<number>(0);

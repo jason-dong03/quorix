@@ -3,7 +3,8 @@ import { getAllSymbols, upsertQuotes } from "../models/marketDataModel.js";
 import cron from "node-cron";
 import finnhubClient from "../finnhubClient.js";
 
-function fetchSingleQuote(symbol) {
+export function fetchSingleQuote(symbol) {
+  console.log(`fetching ${symbol}...`);
   return new Promise((resolve, reject) => {
     finnhubClient.quote(symbol, (err, data) => {
       if (err) return reject(err);

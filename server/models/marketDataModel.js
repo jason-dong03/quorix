@@ -16,7 +16,6 @@ export async function upsertQuotes(quotes) {
     params.push(q.symbol, q.last_price, q.last_change_pct);
     i += 3;
   }
-
   const sql = `
     INSERT INTO market_data_updates
       (symbol, last_price, last_change_pct, last_updated)
@@ -129,4 +128,16 @@ export async function deleteStockFromUserHolding(userID, s, sh, ba){
     AND symbol = $2 
     AND shares = $3 
     AND bought_at = $4`,[userID, s, sh, ba]);
+}
+
+export async function getSentimentFromCache(symbol){
+    const sql = `SELECT * FROM market_sentiments WHERE symbol = $1 AND expires_at > NOW() LIMIT 1`;
+    const res = await query(sql, [symbol]);
+    return res.rows[0] || null;
+}
+export async function addSentimentToCache(quote){
+    const sql = `INSERT INTO market_sentiments (symbol, last_price, last_change_pct, expires_at) VALUES
+    ($1, $2, $3, NOW() + INTERVAL '1 hour')`;
+    await query(sql, [quote.symbol, quote.last_price, quote.last_change_pct]);
+    return true;
 }

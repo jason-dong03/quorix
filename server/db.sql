@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS market_data_updates CASCADE;
 DROP TABLE IF EXISTS tickers CASCADE;
 DROP TABLE IF EXISTS price_cache CASCADE;
 DROP TABLE IF EXISTS news_cache CASCADE;
+DROP TABLE IF EXISTS market_sentiments CASCADE;
 
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
@@ -48,8 +49,7 @@ CREATE TABLE IF NOT EXISTS market_data_updates (
   symbol TEXT PRIMARY KEY REFERENCES tickers(symbol) ON DELETE CASCADE,
   last_price NUMERIC(18,4) NOT NULL,
   last_change_pct NUMERIC(6,3),         -- +3.05 etc
-  last_updated TIMESTAMPTZ DEFAULT NOW(),
-  source TEXT
+  last_updated TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE TABLE IF NOT EXISTS price_cache (
   id SERIAL PRIMARY KEY,
@@ -78,3 +78,13 @@ CREATE TABLE IF NOT EXISTS news_cache (
   cached_at TIMESTAMPTZ DEFAULT NOW(),
   expires_at TIMESTAMPTZ NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS market_sentiments{
+  id SERIAL PRIMARY KEY,
+  symbol TEXT NOT NULL,
+  name TEXT NOT NULL, 
+  last_price NUMERIC(18,3) NOT NULL,
+  last_change_pct NUMERIC(6,3),         -- +3.05 etc
+  cached_at TIMESTAMPTZ DEFAULT NOW(),
+  expires_at TIMESTAMPTZ NOT NULL
+}

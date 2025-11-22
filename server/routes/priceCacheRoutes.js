@@ -50,14 +50,21 @@ function buildRange(timeframe) {
   }
 
   if (timeframe === "5D") {
-    const start = new Date(etNow); start.setDate(start.getDate() - 7);
+    const start = new Date(etNow); 
+    start.setDate(start.getDate() - 7);
     return { startISO: toUtcIso(start), endISO: toUtcIso(etNow), apiTf: "1Hour" };
   }
 
-  const start = new Date(etNow); start.setDate(start.getDate() - 35);
+  if (timeframe === "1M") {
+    const start = new Date(etNow);
+    start.setMonth(start.getMonth() - 1);
+    return { startISO: toUtcIso(start), endISO: toUtcIso(etNow), apiTf: "1Day" };
+  }
+
+  const start = new Date(etNow); 
+  start.setMonth(start.getMonth() - 1);
   return { startISO: toUtcIso(start), endISO: toUtcIso(etNow), apiTf: "1Day" };
 }
-
 //TREAT SELL FEATURE AS NEGATIVE NOT DELETE FROM DB AND MARK IT AS SOLD 
 router.get("/api/portfolio-history", async (req, res) => {
   const token = req.cookies.session;
