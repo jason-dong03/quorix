@@ -88,7 +88,6 @@ export const calculateMultiDayDomain = (
 
   const now = Date.now();
   const sorted = [...chartData].sort((a, b) => a.timestamp - b.timestamp);
-  const first = sorted[0].timestamp;
   const last = sorted[sorted.length - 1].timestamp;
 
 
