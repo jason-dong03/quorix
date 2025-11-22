@@ -2,38 +2,41 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import { getHistoricalPrices,fetchUserTransactions } from "../models/priceCacheModel.js";
 import { fetchUserHoldingsByDate } from "../models/marketDataModel.js";
+import { DateTime } from "luxon";
 const router = express.Router();
 
 function nowET() {
-  return new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
+  return DateTime.now().setZone('America/New_York');
 }
-
 function previousBusinessDayET(d) {
-  const out = new Date(d);
-  do { out.setDate(out.getDate() - 1); } while ([0,6].includes(out.getDay()));
-  return out;
+  let dt = DateTime.fromJSDate(d).setZone('America/New_York');
+  do {
+    dt = dt.minus({ days: 1 });
+  } while ([0, 6].includes(dt.weekday % 7));
+  return dt;
 }
 
 function startOfSessionET(d) {
-  const s = new Date(d);
-  s.setHours(9, 30, 0, 0);           
-  return s;
+  const dt = DateTime.fromJSDate(d).setZone('America/New_York');
+  return dt.set({ hour: 9, minute: 30, second: 0, millisecond: 0 });
 }
 
 function endOfSessionET(d) {
-  const e = new Date(d);
-  e.setHours(15, 55, 0, 0);          
-  return e;
+  const dt = DateTime.fromJSDate(d).setZone('America/New_York');
+  return dt.set({ hour: 15, minute: 55, second: 0, millisecond: 0 });
 }
 
-function toUtcIso(d) { return new Date(d.getTime()).toISOString(); }
+function toUtcIso(dt) {
+  // dt is a Luxon DateTime
+  return dt.toUTC().toISO();
+}
 
 function buildRange(timeframe) {
   const etNow = nowET();
 
   if (timeframe === "1D") {
     const sessionStart = startOfSessionET(etNow);
-    const sessionEnd   = endOfSessionET(etNow);
+    const sessionEnd = endOfSessionET(etNow);
 
     if (etNow < sessionStart) {
       const prev = previousBusinessDayET(etNow);
@@ -50,19 +53,16 @@ function buildRange(timeframe) {
   }
 
   if (timeframe === "5D") {
-    const start = new Date(etNow); 
-    start.setDate(start.getDate() - 7);
+    const start = etNow.minus({ days: 7 });
     return { startISO: toUtcIso(start), endISO: toUtcIso(etNow), apiTf: "1Hour" };
   }
 
   if (timeframe === "1M") {
-    const start = new Date(etNow);
-    start.setMonth(start.getMonth() - 1);
+    const start = etNow.minus({ months: 1 });
     return { startISO: toUtcIso(start), endISO: toUtcIso(etNow), apiTf: "1Day" };
   }
 
-  const start = new Date(etNow); 
-  start.setMonth(start.getMonth() - 1);
+  const start = etNow.minus({ months: 1 });
   return { startISO: toUtcIso(start), endISO: toUtcIso(etNow), apiTf: "1Day" };
 }
 //TREAT SELL FEATURE AS NEGATIVE NOT DELETE FROM DB AND MARK IT AS SOLD 
