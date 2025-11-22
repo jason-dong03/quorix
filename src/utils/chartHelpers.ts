@@ -1,4 +1,4 @@
-import { etMidnightMs, addEtMonths } from "../utils/ETHelper";
+import { etMidnightMs } from "../utils/ETHelper";
 
 export interface ChartData {
   timestamp: number;
@@ -26,17 +26,11 @@ export const isRegularSessionET = (ts: number): boolean => {
   return minutes >= 570 && minutes <= 960; // 09:30 (570) to 16:00 (960)
 };
 
-/**
- * Get ET time for a specific hour/minute on the same day as baseTs
- */
 export const etAtSameDay = (baseTs: number, hh: number, mm: number): number => {
   const day0 = etMidnightMs(baseTs);
   return day0 + (hh * 60 + mm) * 60_000;
 };
 
-/**
- * Calculate Y-axis domain with padding
- */
 export const calculateYDomain = (chartData: ChartData[]): [number, number] => {
   if (!chartData.length) return [0, 0];
   
@@ -57,9 +51,6 @@ export const calculateYDomain = (chartData: ChartData[]): [number, number] => {
   return [min - pad, max + pad];
 };
 
-/**
- * Calculate intraday domain for 1D view (9:30 AM - 4:00 PM ET)
- */
 export const calculateIntradayDomain = (
   chartData: ChartData[]
 ): [number, number] | undefined => {
@@ -74,10 +65,6 @@ export const calculateIntradayDomain = (
   return [start, right];
 };
 
-/**
- * Calculate multi-day domain for 5D/1M views
- */
-// utils/chartHelpers.ts
 export const calculateMultiDayDomain = (
   chartData: ChartData[],
   timeframe: string
@@ -93,13 +80,10 @@ export const calculateMultiDayDomain = (
   const last = sorted[sorted.length - 1].timestamp;
 
   if (is5D) {
-    // Extend to current time or market close (4:00 PM ET)
     const todayEnd = etAtSameDay(now, 16, 0);
     const right = Math.min(now, todayEnd);
     return [first, Math.max(last, right)];
   }
-
-  // For 1M daily data
   const isToday = etMidnightMs(last) === etMidnightMs(now);
   const todayEnd = etAtSameDay(now, 16, 0);
   const right = isToday ? Math.min(now, todayEnd) : last;
@@ -127,7 +111,6 @@ export const calculateRangeDomain = (
     const left = firstDataPoint.timestamp;
     const todayEnd = etAtSameDay(now, 16, 0);
     
-    // Use the later of: last data point or current time (capped at market close)
     const right = Math.max(lastDataPoint.timestamp, Math.min(now, todayEnd));
     
     return [left, right];
