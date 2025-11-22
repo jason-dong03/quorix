@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, Zap, Brain, Target, Eye, Bell, Search, Filter, ArrowUpRight, ArrowDownRight, TrendingDown } from 'lucide-react';
+import { TrendingUp, Zap, Brain, Target, Bell, Search, Filter, TrendingDown } from 'lucide-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import NavBar from './components/Shared/NavBar';
 
@@ -20,13 +20,7 @@ import HoldingTrends from './components/PortfolioPage/TopGainers';
 import MarketSentiment from './components/PortfolioPage/MarketSentiment';
 
 
-interface MarketStock {
-  symbol: string;
-  name: string;
-  price: number;
-  change: number;
-  volume: string;
-}
+
 interface PieDataPoint {
   name: string;
   value: number;
@@ -52,7 +46,7 @@ const PortfolioDashboard: React.FC = () => {
   const [selectedStock, setSelectedStock] = useState<WatchlistStock | null>(null);
   const [activeTab, setActiveTab] = useState<string>('holdings');
   const [pieHoverIndex, setPieHoverIndex] = useState<number | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>('');
+
   
   const handleBuyClick = (stock: WatchlistStock) => {
       setSelectedStock(stock);
@@ -82,23 +76,6 @@ const PortfolioDashboard: React.FC = () => {
         color: getStockColor(h.sector)
     }));
 
-    const topGainers: MarketStock[] = [
-        { symbol: 'NVDA', name: 'NVIDIA Corp', price: 892.45, change: 8.34, volume: '45.2M' },
-        { symbol: 'TSLA', name: 'Tesla Inc', price: 245.67, change: 6.12, volume: '89.1M' },
-        { symbol: 'AMD', name: 'Advanced Micro', price: 178.23, change: 5.87, volume: '52.3M' },
-    ];
-
-    const trending: MarketStock[] = [
-        { symbol: 'MSFT', name: 'Microsoft Corp', price: 425.89, change: 2.45, volume: '28.9M' },
-        { symbol: 'AAPL', name: 'Apple Inc', price: 189.34, change: 1.88, volume: '65.4M' },
-        { symbol: 'GOOGL', name: 'Alphabet Inc', price: 142.56, change: -1.21, volume: '31.2M' },
-    ];
-
-    const topLosers: MarketStock[] = [
-        { symbol: 'PYPL', name: 'PayPal Holdings', price: 62.34, change: -4.56, volume: '18.7M' },
-        { symbol: 'NFLX', name: 'Netflix Inc', price: 478.12, change: -3.21, volume: '8.9M' },
-        { symbol: 'UBER', name: 'Uber Technologies', price: 68.45, change: -2.89, volume: '22.4M' },
-    ];
 
   return (<>
     <BuyStockModal stock={selectedStock} />
