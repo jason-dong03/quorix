@@ -27,21 +27,18 @@ export const processBenchmarkData = (
   return cleaned;
 };
 
-/**
- * Create maps for fast benchmark data lookup
- */
 export const createBenchmarkMaps = (
   benchData: BenchmarkMap,
   timeframe: string
 ): Record<string, Map<number, number>> => {
   const maps: Record<string, Map<number, number>> = {};
-  const is1D = timeframe === "1D";
+  const isIntraday = timeframe === "1D" || timeframe === "5D"; 
   
   for (const [sym, arr] of Object.entries(benchData)) {
     const m = new Map<number, number>();
     
     for (const p of arr ?? []) {
-      const key = is1D ? p.timestamp : etMidnightMs(p.timestamp);
+      const key = isIntraday ? p.timestamp : etMidnightMs(p.timestamp);
       m.set(key, p.value);
     }
     
@@ -51,7 +48,6 @@ export const createBenchmarkMaps = (
   return maps;
 };
 
-
 export const mergeBenchmarkData = <T extends { timestamp: number; dayStart?: number }>(
   chartData: T[],
   benchmarkMaps: Record<string, Map<number, number>>,
@@ -59,10 +55,10 @@ export const mergeBenchmarkData = <T extends { timestamp: number; dayStart?: num
 ): (T & { SPY?: number; QQQ?: number; DIA?: number })[] => {
   if (!chartData.length) return [];
   
-  const is1D = timeframe === "1D";
+  const isIntraday = timeframe === "1D" || timeframe === "5D"; // Both use timestamp keys
   
   return chartData.map((p) => {
-    const key = is1D ? p.timestamp : p.dayStart!;
+    const key = isIntraday ? p.timestamp : p.dayStart!;
     
     return {
       ...p,
@@ -72,7 +68,6 @@ export const mergeBenchmarkData = <T extends { timestamp: number; dayStart?: num
     };
   });
 };
-
 export const extendDataToDomain = <T extends { timestamp: number }>(
   data: T[],
   rightEdge: number

@@ -11,7 +11,7 @@ import {
 } from "recharts";
 import type { NameType, Payload, ValueType } from "recharts/types/component/DefaultTooltipContent";
 import { usePortfolio } from "../../context/PortfolioContext";
-import { buildDailyTicksEt, formatEtDate, formatEtTime } from "../../utils/ETHelper";
+import { buildDailyTicksEt, buildMultiDayTicksEt, formatEtDate, formatEtTime } from "../../utils/ETHelper";
 import { ChartHeader } from "./ChartHeader";
 import { useBenchmarkToggles } from "../../hooks/useBenchmarkToggles";
 import { usePortfolioData } from "../../hooks/usePortfolioData";
@@ -74,11 +74,6 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
     [is5D, is1M, chartData, timeframe, xKey]
   );
 
-  // Calculate day ticks for daily view
-  const dayTicks = useMemo(
-    () => (xKey === "dayStart" && rangeDomain ? buildDailyTicksEt(rangeDomain) : undefined),
-    [xKey, rangeDomain]
-  );
 
   // Merge benchmark data with chart data
   const benchmarkMaps = useMemo(
@@ -92,18 +87,17 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
   );
 
   const extendedData = useMemo(() => {
-    if (!mergedData.length) return [];
+    if (!mergedData.length) return mergedData;
     
-    let result = [...mergedData];
+    const result = [...mergedData];
     const last = result[result.length - 1];
     if (!last) return result;
-
     if (is1D && intradayDomain) {
       const rightEdge = intradayDomain[1];
       if (last.timestamp < rightEdge) {
         result.push({ ...last, timestamp: rightEdge });
       }
-    } else if (is5D && multiDayDomain && xKey === "timestamp") {
+    } else if (is5D && multiDayDomain) {
       const rightEdge = multiDayDomain[1];
       if (last.timestamp < rightEdge) {
         result.push({ ...last, timestamp: rightEdge });
@@ -117,10 +111,21 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
           timestamp: rightEdge 
         });
       }
-    }
+  }
 
-    return result;
-  }, [mergedData, is1D, is5D, is1M, intradayDomain, multiDayDomain, rangeDomain, xKey]);
+  return result;
+}, [mergedData, is1D, is5D, is1M, intradayDomain, multiDayDomain, rangeDomain]);
+  const customTicks = useMemo(() => {
+    if (xKey === "dayStart" && rangeDomain) {
+      // 1M: Daily ticks from range
+      return buildDailyTicksEt(rangeDomain);
+    } else if (is5D && extendedData.length > 0) {
+      // 5D: One tick per day from actual data
+      return buildMultiDayTicksEt(extendedData);
+    }
+    return undefined;
+  }, [xKey, rangeDomain, is5D, extendedData]);
+
   const formatTooltipValue = (
     val: ValueType,
     name: NameType,
@@ -226,7 +231,6 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
                 <circle cx="2" cy="2" r="1" fill="#0d6efd" opacity="0.3" />
               </pattern>
             </defs>
-
             <XAxis
               dataKey={xKey}
               type="number"
@@ -234,9 +238,11 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
               domain={
                 is1D
                   ? intradayDomain
+                  : is5D
+                  ? multiDayDomain  // Use multiDayDomain for 5D
                   : rangeDomain ?? ["dataMin", "dataMax"]
               }
-              ticks={xKey === "dayStart" ? dayTicks : undefined}
+              ticks={customTicks}
               stroke="#6c757d"
               tick={{ fill: "#6c757d" }}
               angle={-45}
@@ -246,7 +252,6 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
                 is1D ? formatEtTime(ms as number) : formatEtDate(ms as number)
               }
             />
-
             <YAxis
               yAxisId="left"
               domain={[yMin, yMax]}

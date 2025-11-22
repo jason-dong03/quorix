@@ -12,8 +12,7 @@ function getEtParts(ms: number) {
     timeZoneName: "shortOffset",
   }).formatToParts(ms);
   const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
-  // map.timeZoneName like "GMT-4" or "GMT-5"
-  const offMin = -60 * Number(map.timeZoneName.replace("GMT", "")); // e.g., -240 or -300
+  const offMin = -60 * Number(map.timeZoneName.replace("GMT", ""));
   return {
     y: Number(map.year), m: Number(map.month), d: Number(map.day),
     H: Number(map.hour), M: Number(map.minute),
@@ -41,16 +40,14 @@ export function formatEtTime(ms: number) {
     minute: "2-digit",
   }).format(ms);
 }
-// ETHelper.ts
 export function getEtOffsetMinutes(ms: number) {
-  // e.g., "GMT-5" (standard) or "GMT-4" (DST)
   const tz = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/New_York",
     timeZoneName: "shortOffset",
   }).formatToParts(ms).find(p => p.type === "timeZoneName")?.value ?? "GMT-5";
 
   const hours = Number(tz.replace("GMT", "")); // -> -5 or -4
-  return hours * 60;                            // -> -300 or -240
+  return hours * 60;// -> -300 or -240
 }
 
 export function etMidnightMs(ms: number) {
@@ -84,8 +81,8 @@ export function addEtMonths(ms: number, delta: number) {
       day: Number(parts.find(p => p.type === "day")!.value),
     };
   })();
-  const d = new Date(Date.UTC(year, month - 1 + delta, day)); // UTC temp
-  return d.getTime(); // ms UTC; we’ll convert with etMidnightMs where needed
+  const d = new Date(Date.UTC(year, month - 1 + delta, day)); 
+  return d.getTime(); 
 }
 
 export function buildDailyTicksEt([lo, hi]: [number, number]) {
@@ -98,4 +95,21 @@ export function buildDailyTicksEt([lo, hi]: [number, number]) {
     cur += 24 * 60 * 60 * 1000;
   }
   return ticks;
+}
+export function buildMultiDayTicksEt(chartData: { timestamp: number }[]) {
+  if (!chartData.length) return [];
+  
+  const seen = new Set<number>();
+  const ticks: number[] = [];
+  
+  for (const point of chartData) {
+    const dayMidnight = etMidnightMs(point.timestamp);
+    if (!seen.has(dayMidnight)) {
+      seen.add(dayMidnight);
+      const noonTick = etAt(dayMidnight, 12, 0);
+      ticks.push(noonTick);
+    }
+  }
+  
+  return ticks.sort((a, b) => a - b);
 }

@@ -77,6 +77,7 @@ export const calculateIntradayDomain = (
 /**
  * Calculate multi-day domain for 5D/1M views
  */
+// utils/chartHelpers.ts
 export const calculateMultiDayDomain = (
   chartData: ChartData[],
   timeframe: string
@@ -88,25 +89,22 @@ export const calculateMultiDayDomain = (
 
   const now = Date.now();
   const sorted = [...chartData].sort((a, b) => a.timestamp - b.timestamp);
+  const first = sorted[0].timestamp;
   const last = sorted[sorted.length - 1].timestamp;
 
-
-  let start: number;
-  if (is1M) {
-
-    const oneMonthAgo = addEtMonths(now, -1);
-    start = etAtSameDay(oneMonthAgo, 9, 30);
-  } else {
-    const fiveDaysAgo = now - 4 * 24 * 60 * 60 * 1000;
-    start = etAtSameDay(fiveDaysAgo, 9, 30);
+  if (is5D) {
+    // Extend to current time or market close (4:00 PM ET)
+    const todayEnd = etAtSameDay(now, 16, 0);
+    const right = Math.min(now, todayEnd);
+    return [first, Math.max(last, right)];
   }
 
-
+  // For 1M daily data
   const isToday = etMidnightMs(last) === etMidnightMs(now);
   const todayEnd = etAtSameDay(now, 16, 0);
-  const right = isToday ? Math.min(now, todayEnd) : etAtSameDay(last, 16, 0);
+  const right = isToday ? Math.min(now, todayEnd) : last;
 
-  return [start, right];
+  return [first, right];
 };
 
 export const calculateRangeDomain = (
@@ -121,17 +119,26 @@ export const calculateRangeDomain = (
 
   const now = Date.now();
   const sorted = [...chartData].sort((a, b) => a.timestamp - b.timestamp);
-  const firstDataPoint = sorted[0]; 
+  const firstDataPoint = sorted[0];
+  const lastDataPoint = sorted[sorted.length - 1];
   
   if (xKey === "timestamp") {
-    // Intraday axis
-    const leftStart = firstDataPoint.timestamp;
+
+    const left = firstDataPoint.timestamp;
     const todayEnd = etAtSameDay(now, 16, 0);
-    const right = Math.min(now, todayEnd);
-    return [leftStart, right];
+    
+    // Use the later of: last data point or current time (capped at market close)
+    const right = Math.max(lastDataPoint.timestamp, Math.min(now, todayEnd));
+    
+    return [left, right];
   } else {
     const left = firstDataPoint.dayStart || etMidnightMs(firstDataPoint.timestamp);
-    const right = etMidnightMs(now);
+
+    const right = Math.max(
+      lastDataPoint.dayStart || etMidnightMs(lastDataPoint.timestamp),
+      etMidnightMs(now)
+    );
+    
     return [left, right];
   }
 };
