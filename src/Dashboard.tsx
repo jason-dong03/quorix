@@ -29,7 +29,7 @@ const Dashboard: React.FC = () => {
   }, []);
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const {watchlist, availableStocks, isLoading } = usePortfolio();
+  const {watchlist, availableStocks } = usePortfolio();
   const {addToWatchlist, removeFromWatchlist, sellStock, sellAllLots } = usePortfolioActions();
 
   useEffect(() => {
@@ -75,7 +75,7 @@ const Dashboard: React.FC = () => {
         stock.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-  if (authLoading || isLoading) return <div>Loading...</div>;
+  if (authLoading) return <div>Loading...</div>;
   if (!user) return null;
 
   return (
