@@ -10,11 +10,11 @@ interface BenchmarkResponse{
   mode: string;
 }
 export const fetchPortfolioHistory = async (
-  timeframe: string
+  timeframe: string, portfolioId?: number | null
 ): Promise<ChartData[]> => {
   try {
     const response = await fetch(
-      `/api/portfolio-history?timeframe=${timeframe}`,
+      `/api/portfolios/${portfolioId}/portfolio-history?timeframe=${timeframe}`,
       {
         method: 'GET',
         credentials: 'include',

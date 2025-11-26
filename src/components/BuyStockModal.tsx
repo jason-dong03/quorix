@@ -8,12 +8,14 @@ interface ModalProps {
 }
 
 export const BuyStockModal: React.FC<ModalProps> = ({ stock }) => {
-  const { refetchHoldings } = usePortfolio();
+  const { refetchHoldings, currentPortfolio } = usePortfolio();
   const price = useMemo(() => Number(stock?.last_price ?? 0), [stock]);
   const [tab, setTab] = useState<"shares" | "amount">("shares");
   const [shares, setShares] = useState<number>(1);
   const [amount, setAmount] = useState<number>(100);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const portfolioId = currentPortfolio?.id;
 
   const estCost = useMemo(() => +(shares * price).toFixed(2), [shares, price]);
   const estShares = useMemo(
@@ -40,10 +42,10 @@ export const BuyStockModal: React.FC<ModalProps> = ({ stock }) => {
         avg_cost: tab === "shares" ? estCost : amount,
       };
       
-      const addStock = await addStockToHolding(holdingStock);
+      const addStock = await addStockToHolding(holdingStock,portfolioId);
       
       if (addStock) {
-        await refetchHoldings();
+        refetchHoldings();
         // console.log("success, added new stocks");
         setShares(1);
         setAmount(100);

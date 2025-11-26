@@ -25,25 +25,35 @@ router.get("/api/market_data", async (req, res) => {
     return res.status(500).json({ error: "Fetching data failed!" });
   }
 });
-router.get("/api/watchlist", async (req, res) => {
+router.get("/api/portfolios/:portfolioId/watchlist", async (req, res) => {
   const token = req.cookies.session;
   if (!token) return res.status(404).json({ user: null });
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const watchlist = await fetchUserWatchlist(decoded.uid);
-
+    const portfolioId = parseInt(req.params.portfolioId, 10);
+    if (!portfolioId) {
+      return res.status(400).json({ error: "Invalid portfolio ID" });
+    }
+    const watchlist = await fetchUserWatchlist(decoded.uid, portfolioId);
     return res.json({ watchlist });
   } catch (err) {
     console.log("error: ", err);
     return res.status(500).json({ error: "Failed to fetch watchlist" });
   }
 });
-router.get("/api/holdings", async (req, res) => {
+router.get("/api/portfolios/:portfolioId/holdings", async (req, res) => {
   const token = req.cookies.session;
-  if (!token) return res.status(404).json({ user: null });
+  if (!token) {
+    console.log("no token!");
+    return res.status(404).json({ user: null });
+  }
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const holdings = await fetchUserHoldings(decoded.uid);
+    const portfolioId = parseInt(req.params.portfolioId, 10);
+    if (!portfolioId) {
+      return res.status(400).json({ error: "Invalid portfolio ID" });
+    }
+    const holdings = await fetchUserHoldings(decoded.uid, portfolioId);
     
     return res.json({ holdings });
   } catch (err) {
@@ -96,16 +106,21 @@ router.get('/api/market-sentiment', async (req, res) => {
 });
 
 /* POST ROUTES */
-router.post("/api/holdings", async (req, res) => {
+router.post("/api/portfolios/:portfolioId/holdings", async (req, res) => {
   const token = req.cookies.session;
   if (!token) return res.status(401).json({ error: "Not authenticated" });
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const portfolioId = parseInt(req.params.portfolioId, 10);
+    if (!portfolioId) {
+      return res.status(400).json({ error: "Invalid portfolio ID" });
+    }
     const { symbol, bought_at, shares, avg_cost } = req.body;
 
     await addStockToUserHolding(
       decoded.uid,
+      portfolioId,
       symbol,
       bought_at,
       shares,
@@ -117,26 +132,31 @@ router.post("/api/holdings", async (req, res) => {
     return res.status(500).json({ error: "Failed to add stock" });
   }
 });
-router.post("/api/watchlist", async (req, res) => {
+router.post("/api/portfolios/:portfolioId/watchlist", async (req, res) => {
   const token = req.cookies.session;
   if (!token) return res.status(401).json({ error: "Not authenticated" });
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const portfolioId = parseInt(req.params.portfolioId, 10);
+    if (!portfolioId) {
+      return res.status(400).json({ error: "Invalid portfolio ID" });
+    }
+    console.log("portfolio id: ", portfolioId);
     const { symbol } = req.body;
-    await addStockToUserWatchlist(decoded.uid, symbol);
+    await addStockToUserWatchlist(decoded.uid, portfolioId, symbol);
     return res.status(200).json({ success: true });
   } catch (err) {
     console.error("add stock error:", err);
     return res.status(500).json({ error: "Failed to add stock" });
   }
 });
-router.delete("/api/watchlist/:symbol", async (req, res) => {
+router.delete("/api/portfolios/:portfolioId/watchlist/:symbol", async (req, res) => {
   const token = req.cookies.session;
   if (!token) return res.status(401).json({ error: "Not authenticated" });
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const { symbol } = req.params;
-    await deleteStockFromUserWatchlist(decoded.uid, symbol);
+    const { portfolioId, symbol } = req.params;
+    await deleteStockFromUserWatchlist(decoded.uid, portfolioId, symbol);
     return res.status(200).json({ success: true });
   } catch (err) {
     console.error("delete stock error:", err);
@@ -144,15 +164,19 @@ router.delete("/api/watchlist/:symbol", async (req, res) => {
   }
 });
 
-router.delete("/api/sell_holding", async(req,res)=>{
+router.delete("/api/portfolios/:portfolioId/sell_holding", async(req,res)=>{
   const token = req.cookies.session;
   if(!token){
     return res.status(401).json({error: "Not authenticated"});
   }
   try{  
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const portfolioId = parseInt(req.params.portfolioId, 10);
+    if (!portfolioId) {
+      return res.status(400).json({ error: "Invalid portfolio ID" });
+    }
     const { s, sh, ba } = req.body;
-    await deleteStockFromUserHolding(decoded.uid, s, sh, ba);
+    await deleteStockFromUserHolding(decoded.uid, portfolioId, s, sh, ba);
     return res.status(200).json({ success: true });
 
   }catch(err){

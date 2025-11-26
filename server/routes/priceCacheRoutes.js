@@ -91,16 +91,20 @@ function buildRange(timeframe) {
 }
 //TREAT SELL FEATURE AS NEGATIVE NOT DELETE FROM DB AND MARK IT AS SOLD 
 // priceCacheRoutes.js
-router.get("/api/portfolio-history", async (req, res) => {
+router.get("/api/portfolios/:portfolioId/portfolio-history", async (req, res) => {
   const token = req.cookies.session;
   if (!token) return res.status(404).json({ user: null });
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const portfolioId = parseInt(req.params.portfolioId, 10);
+    if (!portfolioId) {
+      return res.status(400).json({ error: "Invalid portfolio ID" });
+    }
     const userID = decoded.uid;
     const { timeframe = "1M" } = req.query;
 
-    const holdings = await fetchUserHoldingsByDate(userID);
+    const holdings = await fetchUserHoldingsByDate(userID, portfolioId);
     const groupedHoldings = Object.values(
       holdings.reduce((acc, h) => {
         if (!acc[h.symbol]) acc[h.symbol] = { ...h, shares: 0 };
@@ -116,19 +120,14 @@ router.get("/api/portfolio-history", async (req, res) => {
     }
 
     const { startISO, endISO, apiTf } = buildRange(timeframe);
-    console.log(`\n========== ${timeframe} REQUEST ==========`);
-    console.log(`📅 Range: ${startISO} → ${endISO}`);
-    console.log(`📅 API Timeframe: ${apiTf}`);
+    //console.log(`\n========== ${timeframe} REQUEST ==========`);
+    //console.log(`📅 Range: ${startISO} → ${endISO}`);
+    //console.log(`📅 API Timeframe: ${apiTf}`);
 
     // Fetch all price histories
     const priceHistories = await Promise.all(
       groupedHoldings.map(async (h) => {
         const prices = await getHistoricalPrices(h.symbol, startISO, endISO, apiTf);
-        console.log(`📊 ${h.symbol}: ${prices.length} bars`);
-        if (prices.length > 0) {
-          console.log(`   First: ${new Date(prices[0].t).toISOString()}`);
-          console.log(`   Last: ${new Date(prices[prices.length - 1].t).toISOString()}`);
-        }
         return { symbol: h.symbol, prices };
       })
     );
@@ -154,9 +153,7 @@ router.get("/api/portfolio-history", async (req, res) => {
       .filter(ms => !isNaN(ms))
       .sort((a, b) => a - b);
 
-    console.log(`⏰ Reference: ${referenceSymbol.symbol} with ${timeline.length} bars`);
-    console.log(`⏰ Timeline: ${new Date(timeline[0])} → ${new Date(timeline[timeline.length - 1])}`);
-
+  
     // === BUILD PRICE MAPS WITH ALIGNMENT ===
     const priceMap = new Map();
     
@@ -172,7 +169,6 @@ router.get("/api/portfolio-history", async (req, res) => {
         }
       }
 
-      // Forward-fill ONLY on canonical timeline
       let lastPrice = null;
       const aligned = new Map();
       for (const ts of timeline) {
@@ -185,10 +181,10 @@ router.get("/api/portfolio-history", async (req, res) => {
       }
       
       priceMap.set(symbol, aligned);
-      console.log(`📊 ${symbol}: ${m.size} raw bars → ${aligned.size} aligned bars`);
+    //  console.log(`📊 ${symbol}: ${m.size} raw bars → ${aligned.size} aligned bars`);
     }
 
-    // === PROCESS TRANSACTIONS ===
+  
     const priceSymbols = new Set(priceMap.keys());
     const txs = transactions
       .filter((t) => priceSymbols.has(t.symbol))
@@ -206,15 +202,12 @@ router.get("/api/portfolio-history", async (req, res) => {
     const history = [];
 
     for (const ts of timeline) {
-      // Apply transactions
       while (txIdx < txs.length && txs[txIdx].ms <= ts) {
         const { symbol, shares } = txs[txIdx];
         const prev = holdingsNow.get(symbol) || 0;
         holdingsNow.set(symbol, prev + shares);
         txIdx++;
       }
-
-      // Calculate value
       let total = 0;
       let hasData = false;
       for (const [symbol, shares] of holdingsNow.entries()) {
@@ -226,7 +219,6 @@ router.get("/api/portfolio-history", async (req, res) => {
         }
       }
 
-      // Only include points where we have price data
       if (hasData) {
         history.push({
           timestamp: ts,
@@ -234,11 +226,6 @@ router.get("/api/portfolio-history", async (req, res) => {
         });
       }
     }
-
-    console.log(`✅ Returning ${history.length} portfolio points`);
-    console.log(`   First: ${new Date(history[0].timestamp).toISOString()} = $${history[0].value}`);
-    console.log(`   Last: ${new Date(history[history.length - 1].timestamp).toISOString()} = $${history[history.length - 1].value}`);
-    console.log(`========================================\n`)
     return res.json({ history });
 
   } catch (err) {

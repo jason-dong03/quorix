@@ -13,7 +13,7 @@ export const Insights: React.FC = () => {
         <div className="card-body">
           <div className="d-flex align-items-center mb-3">
             <Brain size={20} className="me-2" />
-            <h6 className="mb-0">AI Insights</h6>
+            <h6 className="mb-0">Market Insights</h6>
           </div>
           <div className="mb-3">
             <small className="text-muted d-block mb-2">Risk Score</small>

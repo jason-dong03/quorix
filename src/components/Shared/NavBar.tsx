@@ -1,17 +1,26 @@
 import React from "react";
-import { Menu, User } from "lucide-react";
+import { LogOut, Menu, User } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { usePortfolio } from "../../context/PortfolioContext";
 
 
 const NavBar: React.FC = () => {
-  const { user } = useAuth();
+  const { user , logout} = useAuth();
   const location = useLocation();
   const {riskScore} = usePortfolio();
+  const navigate = useNavigate();
   function isActive(path: string) {
     return location.pathname === path;
   }
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
 
   if (!user) return null;
@@ -125,6 +134,21 @@ const NavBar: React.FC = () => {
                 <User size={20} />
               )}
             </div>
+            <button  
+                onClick={handleLogout}
+                className="btn p-2 ps-3"
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "rgba(255, 255, 255, 0.6)",
+                  transition: "color 0.2s ease",
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = "rgba(255, 255, 255, 0.9)"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255, 255, 255, 0.6)"}
+                title="Logout"
+              >
+              <LogOut size={20} />
+            </button>
           </div>
         </div>
       </div>

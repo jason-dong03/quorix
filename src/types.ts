@@ -49,6 +49,7 @@ export interface User {
 export interface AuthContextType {
   user: User | null;
   loading: boolean;
+  logout: () => Promise<void>;
 }
 export type HoldingsTab = "holdings" | "watchlist" | "addstock";
 
@@ -71,3 +72,68 @@ export type MarketSentiment = {
   dow: IndexSentiment | null;
   updated_at: string;
 };
+
+export interface FormData {
+    portfolioIntro: string;
+    investmentGoal: string;
+    riskTolerance: string;
+    experience: string;
+    portfolioName: string;
+}
+
+interface Option {
+    value: string;
+    label: string;
+    icon: string;
+    desc?: string;
+}
+
+export interface Question {
+    id: keyof FormData;
+    question: string;
+    options?: Option[];
+    type?: string;
+    placeholder?: string;
+}
+
+
+export interface Portfolio{
+  id: number;
+  user_id: number;
+  name: string;
+  description: string;
+  is_default: boolean;
+  created_at: string;
+}
+export interface PortfolioContextType {
+  // Portfolio management
+  portfolios: Portfolio[];
+  currentPortfolio: Portfolio | null;
+  setCurrentPortfolio: (portfolio: Portfolio) => void;
+  switchPortfolio: (portfolioId: number) => void;
+  createPortfolio: (name: string, description: string) => Promise<Portfolio>;
+  updatePortfolio: (portfolioId: number, name: string, description: string) => Promise<void>;
+  deletePortfolio: (portfolioId: number) => Promise<void>;
+  setDefaultPortfolio: (portfolioId: number) => Promise<void>;
+
+  // Holdings (filtered by current portfolio)
+  holdings: Holding[];
+  watchlist: WatchlistStock[];
+  news: NewsItem[];
+  availableStocks: WatchlistStock[];
+  
+  
+  // Refetch functions
+  refetchPortfolios: () => void;
+  refetchHoldings: () => void;
+  refetchWatchlist: () => void;
+  
+  // Computed data
+  positions: Position[];
+
+  // Risk metrics
+  riskScore: number;
+  riskScoreLabel: string;
+  diversificationPct: number;
+  diversificationColor: [string, string];
+}

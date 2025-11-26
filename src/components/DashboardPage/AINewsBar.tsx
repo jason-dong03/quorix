@@ -67,7 +67,7 @@ function AINewsBar() {
                 <div className="d-flex align-items-center me-3">
                   <Brain size={20} className="brain-icon text-primary me-2" />
                   <span className="badge bg-primary text-uppercase small">
-                    AI Insight
+                    Market Anlysis
                   </span>
                 </div>
                 <div className="flex-grow-1 text-center">

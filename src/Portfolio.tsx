@@ -107,7 +107,7 @@ const PortfolioDashboard: React.FC = () => {
                 <span className="text-white-50" style={{ fontSize: '0.875rem' }}>Total Value</span>
                 <Zap size={24} className="text-primary" />
               </div>
-              <h2 className="text-white fw-bold mb-2" style={{ fontSize: '3rem' }}>${totalValue}</h2>
+              <h2 className="text-white fw-bold mb-2" style={{ fontSize: '2.25rem'}}>${totalValue}</h2>
               <p className="text-primary mb-0" style={{ fontSize: '0.875rem' }}>{totalChangePercent > 0? "+" : ""}{totalChangePercent.toFixed(2)}% today</p>
             </div>
           </div>
@@ -117,7 +117,7 @@ const PortfolioDashboard: React.FC = () => {
                 <span className="text-white-50" style={{ fontSize: '0.875rem' }}>Total Gain</span>
                 {Number(totalGain) > 0?<TrendingUp size={24} className="text-success" />:<TrendingDown size={24} className="text-danger" />}
               </div>
-              <h2 className="text-white fw-bold mb-2" style={{ fontSize: '3rem' }}>{Number(totalGain) > 0? "+": "-"}${Math.abs(Number(totalGain))}</h2>
+              <h2 className="text-white fw-bold mb-2" style={{ fontSize: '2.25rem' }}>{Number(totalGain) > 0? "+": "-"}${Math.abs(Number(totalGain))}</h2>
               <p className={`${Number(totalGainPct) > 0? "text-success":"text-danger"} mb-0`} style={{ fontSize: '0.875rem' }}>{Number(totalGainPct)>0? "+" : ""}{totalGainPct}%</p>
             </div>
           </div>
@@ -128,7 +128,7 @@ const PortfolioDashboard: React.FC = () => {
                 <span className="text-white-50" style={{ fontSize: '0.875rem' }}>Win Rate</span>
                 <Target size={24} className="text-info" />
               </div>
-              <h2 className="text-white fw-bold mb-2" style={{ fontSize: '3rem' }}>{(winningHoldings.length/numOfHoldings) *100}%</h2>
+              <h2 className="text-white fw-bold mb-2" style={{ fontSize: '2.225rem' }}>{(winningHoldings.length/numOfHoldings) *100}%</h2>
               <p className="text-info mb-0" style={{ fontSize: '0.875rem' }}>{winningHoldings.length}/{numOfHoldings} positions up</p>
             </div>
           </div>
@@ -139,7 +139,7 @@ const PortfolioDashboard: React.FC = () => {
                 <span className="text-white-50" style={{ fontSize: '0.875rem' }}>AI Score</span>
                 <Brain size={24} style={{ color: '#a855f7' }} />
               </div>
-              <h2 className="text-white fw-bold mb-2" style={{ fontSize: '3rem' }}>{riskScore}</h2>
+              <h2 className="text-white fw-bold mb-2" style={{ fontSize: '2.25rem' }}>{riskScore}</h2>
               <p className="mb-0" style={{ fontSize: '0.875rem', color: '#a855f7' }}>{riskScoreLabel}</p>
             </div>
           </div>
@@ -173,10 +173,8 @@ const PortfolioDashboard: React.FC = () => {
             </div>
             <PortfolioGraph timeframe={timeframe}/>
         </div>
-          {/* Holdings Section */}
         <div className='holdings-list'>
             <h3 className="text-white fw-bold mb-3">Stocks</h3>
-            {/* Tabs */}
             <div className="d-flex gap-2 p-2 mb-3" style={{ background: 'rgba(15, 23, 42, 0.5)', borderRadius: '12px', border: '1px solid rgba(51, 65, 85, 1)' }}>
               <button
                 onClick={() => setActiveTab('holdings')}
@@ -303,7 +301,6 @@ const PortfolioDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* AI Insights Panel */}
           <div className="sidebar-card mb-4" style={{ 
             background: 'linear-gradient(135deg, rgba(30, 58, 138, 0.6), rgba(30, 27, 75, 0.6))',
             border: '1px solid rgba(59, 130, 246, 0.5)',
@@ -311,7 +308,7 @@ const PortfolioDashboard: React.FC = () => {
           }}>
             <div className="d-flex align-items-center gap-2 mb-4">
               <Brain size={24} className="text-primary" />
-              <h4 className="text-white fw-bold mb-0">AI Insights</h4>
+              <h4 className="text-white fw-bold mb-0">Market Analysis</h4>
             </div>
             
             <div className="mb-3 p-3 rounded" style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(51, 65, 85, 0.5)' }}>
@@ -336,10 +333,8 @@ const PortfolioDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Market Sentiment */}
           <MarketSentiment/>
 
-          {/* Action Button */}
           <button className="btn w-100 text-white fw-bold py-3 rounded-3" style={{
             background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
             boxShadow: '0 4px 12px rgba(30, 58, 138, 0.5)',

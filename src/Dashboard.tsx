@@ -137,6 +137,13 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+      <footer className="landing-footer">
+        <p className="mb-1">© 2025 quorix +. All rights reserved</p>
+        <p className="mb-0">Quorix provides analytical tools and market data visualizations for educational 
+        purposes only. This is not investment advice, and we do not provide recommendations 
+        or fiduciary services. Nothing on this site should be treated as guidance on what 
+        you should buy, sell, or hold.</p> 
+      </footer>
     </>
   );
 };

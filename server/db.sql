@@ -26,17 +26,35 @@ CREATE TABLE IF NOT EXISTS holdings (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   symbol TEXT NOT NULL REFERENCES tickers(symbol) ON DELETE CASCADE,
+  portfolio_id INT NOT NULL REFERENCES portfolios(id) ON DELETE CASCADE,
   shares NUMERIC(18,6) NOT NULL,
   bought_at NUMERIC(18, 4) NOT NULL,
   avg_cost NUMERIC(18,4) NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+CREATE TABLE IF NOT EXISTS portfolios (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '', 
+  is_default BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
 
+CREATE UNIQUE INDEX idx_portfolios_user_default ON portfolios(user_id) WHERE is_default = true;
 CREATE INDEX IF NOT EXISTS idx_holdings_user ON holdings(user_id);
+CREATE INDEX idx_portfolios_user ON portfolios(user_id);
+
+CREATE INDEX idx_holdings_portfolio ON holdings(portfolio_id);
+
+CREATE INDEX idx_holdings_user ON holdings(user_id);
+
+CREATE INDEX idx_holdings_user_portfolio ON holdings(user_id, portfolio_id);
 
 CREATE TABLE IF NOT EXISTS watchlist (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  portfolio_id INT NOT NULL REFERENCES portfolios(id) ON DELETE CASCADE,
   symbol TEXT NOT NULL REFERENCES tickers(symbol) ON DELETE CASCADE,
   added_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE (user_id, symbol)

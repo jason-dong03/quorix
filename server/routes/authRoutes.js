@@ -20,7 +20,7 @@ router.get("/auth/google", (req, res) => {
     scope: ["openid","email","profile"].join(" "),
     access_type: "online",
     include_granted_scopes: "true",
-    //prompt: "select_account",        
+    prompt: "select_account",        
   });
   res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
 });
@@ -50,15 +50,15 @@ router.get("/auth/google/callback", async (req, res) => {
   );
 
   const profile = profileRes.data;
-  const dbUser = await findOrCreateUserFromGoogle(profile);
+  const {user, isNewUser} = await findOrCreateUserFromGoogle(profile);
 
   const appToken = jwt.sign(
     {
-      uid: dbUser.id,
-      sub: dbUser.google_id,
-      email: dbUser.email,
-      name: dbUser.name,
-      picture: dbUser.picture,
+      uid: user.id,
+      sub: user.google_id,
+      email: user.email,
+      name: user.name,
+      picture: user.picture,
     },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
@@ -67,12 +67,14 @@ router.get("/auth/google/callback", async (req, res) => {
   res.cookie("session", appToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production", // true in production
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // "none" for cross-site cookies
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // none for cross-site cookies
     maxAge: 7 * 24 * 60 * 60 * 1000,
     domain: undefined
   });
 
-  res.redirect(303, `${CLIENT_URL}/dashboard`);
+
+  const redirectURL = isNewUser? "onboarding":"dashboard";
+  res.redirect(303, `${CLIENT_URL}/${redirectURL}`); 
 });
 
 router.get("/api/me", async (req, res) => {
@@ -87,6 +89,16 @@ router.get("/api/me", async (req, res) => {
   } catch {
     return res.status(401).json({ user: null });
   }
+});
+router.post("/auth/logout", (req, res) => {
+  res.clearCookie('session', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    domain: undefined
+  });
+  
+  res.json({ success: true });
 });
 
 export default router;

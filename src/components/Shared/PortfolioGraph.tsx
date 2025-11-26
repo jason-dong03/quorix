@@ -191,6 +191,14 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
   if (!chartData.length || holdings.length === 0) {
     return (
       <div className="card chart-card mb-4">
+        <ChartHeader
+            showSPY={showSPY}
+            showQQQ={showQQQ}
+            showDIA={showDIA}
+            onToggleSPY={toggleSPY}
+            onToggleQQQ={toggleQQQ}
+            onToggleDIA={toggleDIA}
+          />
         <div className="card-body p-4">
           <div className="alert alert-info" role="alert">
             No portfolio data available

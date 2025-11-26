@@ -7,6 +7,9 @@ import authRoutes from "./routes/authRoutes.js";
 import marketDataRoutes from "./routes/marketDataRoutes.js";
 import priceCacheRoutes from "./routes/priceCacheRoutes.js";
 import newsCacheRoutes from "./routes/newsCacheRoutes.js";
+import onboardingRoutes from "./routes/onboardingRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import portfolioRoutes from "./routes/portfolioRoutes.js"
 import { startPriceUpdater, insertEODData } from "./processes/priceUpdater.js";
 import {startNewsCleanup} from "./processes/newsCacheCleanup.js";
 dotenv.config();
@@ -29,6 +32,10 @@ app.use(authRoutes);
 app.use(marketDataRoutes);
 app.use(priceCacheRoutes);
 app.use(newsCacheRoutes);
+app.use(onboardingRoutes);
+app.use(userRoutes);
+app.use(portfolioRoutes);
+
 app.listen(4000, () => {
   console.log(`auth server running on ${process.env.NODE_ENV} mode`);
   //insertEODData();

@@ -44,7 +44,7 @@ export async function fetchLatestMarketData() {
   const res = await query(sql);
   return res.rows;
 }
-export async function fetchUserWatchlist(userId) {
+export async function fetchUserWatchlist(userId, portfolioId) {
   const sql = `
     SELECT 
       t.name,
@@ -55,12 +55,12 @@ export async function fetchUserWatchlist(userId) {
     FROM watchlist w
     JOIN tickers t ON w.symbol = t.symbol
     LEFT JOIN market_data_updates m ON m.symbol = t.symbol
-    WHERE w.user_id = $1;
+    WHERE w.user_id = $1 AND w.portfolio_id = $2;
   `;
-  const res = await query(sql, [userId]);
+  const res = await query(sql, [userId, portfolioId]);
   return res.rows;
 }
-export async function fetchUserHoldings(userId) {
+export async function fetchUserHoldings(userId, portfolioId) {
   const sql = `
     SELECT 
       t.name,
@@ -78,56 +78,59 @@ export async function fetchUserHoldings(userId) {
       ON h.symbol = t.symbol
     LEFT JOIN market_data_updates m
       ON m.symbol = t.symbol
-    WHERE h.user_id = $1;
+    WHERE h.user_id = $1 AND h.portfolio_id = $2;
   `;
-  const res = await query(sql, [userId]);
+  const res = await query(sql, [userId, portfolioId]);
   return res.rows;
 }
-export async function fetchUserHoldingsByDate(userId){
+export async function fetchUserHoldingsByDate(userId, portfolioId){
   const sql = `
     SELECT symbol, shares, bought_at, updated_at
     FROM holdings
-    WHERE user_id = $1
+    WHERE user_id = $1 AND portfolio_id = $2
     ORDER BY updated_at ASC;
   `;
-  const res = await query(sql, [userId]);
+  const res = await query(sql, [userId, portfolioId]);
 
   return res.rows;
 }
 
 export async function addStockToUserHolding(
   userID,
+  portfolioId,
   symbol,
   bought_at,
   shares,
   avg_cost
 ) {
   await query(
-    `INSERT INTO holdings (user_id, symbol, bought_at, shares, avg_cost)
-   VALUES ($1, $2, $3, $4, $5);`,
-    [userID, symbol, bought_at, shares, avg_cost]
+    `INSERT INTO holdings (user_id, portfolio_id, symbol, bought_at, shares, avg_cost)
+   VALUES ($1, $2, $3, $4, $5, $6);`,
+    [userID, portfolioId, symbol, bought_at, shares, avg_cost]
   );
 }
 
-export async function addStockToUserWatchlist(userID, symbol) {
+export async function addStockToUserWatchlist(userID, portfolioId, symbol) {
   await query(
-    `INSERT INTO watchlist (user_id, symbol)
-   VALUES ($1, $2);`,
-    [userID, symbol]
+    `INSERT INTO watchlist (user_id, portfolio_id, symbol)
+   VALUES ($1, $2, $3);`,
+    [userID, portfolioId, symbol]
   );
 }
-export async function deleteStockFromUserWatchlist(userID, symbol) {
-  await query(`DELETE FROM watchlist WHERE user_id = $1 AND symbol = $2`, [
+export async function deleteStockFromUserWatchlist(userID,portfolioId, symbol) {
+  await query(`DELETE FROM watchlist WHERE user_id = $1 AND symbol = $2 AND portfolio_id = $3`, [
     userID,
     symbol,
+    portfolioId
   ]);
 }
 
-export async function deleteStockFromUserHolding(userID, s, sh, ba){
+export async function deleteStockFromUserHolding(userID, portfolioId, s, sh, ba){
   await query(`DELETE FROM holdings WHERE user_id = $1 
     AND symbol = $2 
     AND shares = $3 
-    AND bought_at = $4`,[userID, s, sh, ba]);
+    AND portfolio_id = $5
+    AND bought_at = $4`,[userID, s, sh, ba, portfolioId]);
 }
 
 export async function getSentimentFromCache(symbol){

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { fetchPortfolioHistory } from "../data/cacheData";
 import { etMidnightMs } from "../utils/ETHelper";
 import { toMs, isRegularSessionET, type ChartData } from "../utils/chartHelpers";
+import { usePortfolio } from "../context/PortfolioContext";
 
 interface UsePortfolioDataReturn {
   chartData: ChartData[];
@@ -13,13 +14,27 @@ export const usePortfolioData = (timeframe: string): UsePortfolioDataReturn => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  const {currentPortfolio} = usePortfolio();
+
+  const portfolioId = currentPortfolio?.id ?? null;
+
   useEffect(() => {
+    
+    if (!portfolioId) {
+      setChartData([]);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+    
+    let cancelled = false;
+
     const load = async () => {
       setLoading(true);
       setError(null);
       
       try {
-        const history = await fetchPortfolioHistory(timeframe);
+        const history = await fetchPortfolioHistory(timeframe, portfolioId);
         const is1D = timeframe === "1D";
         const is5D = timeframe === "5D";
         const isIntraday = is1D || is5D;
@@ -36,31 +51,27 @@ export const usePortfolioData = (timeframe: string): UsePortfolioDataReturn => {
           })
           .filter((p) => (is1D ? isRegularSessionET(p.timestamp) : true));
         
-       /* console.log(`\n========== ${timeframe} FRONTEND ==========`);
-        console.log(`📊 Received ${history.length} raw points`);
-        console.log(`📊 Transformed to ${transformed.length} chart points`);
-        console.log(`📊 isIntraday: ${isIntraday}`);
-        if (transformed.length > 0) {
-          console.log(`   First:`, transformed[0]);
-          console.log(`   Last:`, transformed[transformed.length - 1]);
-          const timestamps = transformed.map(p => p.timestamp);
-          const uniqueTimestamps = new Set(timestamps);
-          if (timestamps.length !== uniqueTimestamps.size) {
-            console.log(`⚠️  WARNING: ${timestamps.length - uniqueTimestamps.size} duplicate timestamps!`);
-          }
+  
+        if (!cancelled) {
+          setChartData(transformed);
         }
-        console.log(`========================================\n`);*/
-        setChartData(transformed);
       } catch (e) {
         console.error("Failed to load portfolio history:", e);
-        setError("Failed to load portfolio data");
+        if (!cancelled) {
+          setError("Failed to load portfolio data");
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
     
     load();
-  }, [timeframe]);
+    return () => {
+      cancelled = true;
+    };
+  }, [timeframe, portfolioId]); // 👈 watch both
 
   return { chartData, loading, error };
 };

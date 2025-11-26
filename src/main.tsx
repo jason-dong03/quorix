@@ -9,13 +9,23 @@ import Portfolio from "./Portfolio.tsx"
 
 import ProtectedRoute from "./auth/ProtectedRoute";
 import { PortfolioProvider } from "./context/PortfolioContext.tsx";
+import Onboarding from "./Onboarding.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <AuthProvider>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-
+          <Route
+            path="/onboarding"
+            element={
+               <PortfolioProvider>
+                  <ProtectedRoute>
+                    <Onboarding />
+                  </ProtectedRoute>
+              </PortfolioProvider>
+            }
+          />
           <Route
             path="/dashboard"
             element={
@@ -34,9 +44,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                       <Portfolio/>
                     </ProtectedRoute>
                 </PortfolioProvider>
-          }
-          />
-
+              }
+            />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
