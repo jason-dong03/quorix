@@ -24,7 +24,7 @@ router.get("/api/ai-news", async (req, res)=>{
                 //console.log(`news cache hit for ${s}!`);
                 allNews.push(...news);
             }else{
-                console.log(`news cache missed for ${s}, adding ${s} to list that fetches from claude...`);
+                //console.log(`news cache missed for ${s}, adding ${s} to list that fetches from claude...`);
                 //fetch from claude, then add to news
                 fetchNewsFromClaudeList.push(s);
             }

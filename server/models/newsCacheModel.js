@@ -48,7 +48,7 @@ CRITICAL RULES:
 
 export async function addNewsToCache(news){
     const sql = `INSERT INTO news_cache (symbol, title, summary, source, source_url, relevance,impact, news_date, expires_at) VALUES ($1, $2, $3, $4,
-    $5, $6, $7, $8, NOW() + INTERVAL '1 hour' )`;
+    $5, $6, $7, $8, NOW() + INTERVAL '3 hour' )`;
 
     await query(sql, [news.symbol, news.title, news.summary, news.source, news.source_url, news.relevance, news.impact, news.news_date]);
 

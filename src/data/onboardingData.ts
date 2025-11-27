@@ -3,7 +3,7 @@ import { type FormData } from "../types";
 export const checkOnboardingStatus = async () => {
   try {
     const response = await fetch(
-      `http://localhost:4000/api/onboarding/status`,
+      `/api/onboarding/status`,
       {
         method: 'GET',
         credentials: 'include',
@@ -25,7 +25,7 @@ export const checkOnboardingStatus = async () => {
 export const finishOnboarding = async (formData: FormData) =>{
     try{
         const response = await fetch(
-        `http://localhost:4000/api/onboarding/finish`,
+        `/api/onboarding/finish`,
         {
             method: 'POST',
             credentials: 'include',

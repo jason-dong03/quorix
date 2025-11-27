@@ -38,8 +38,8 @@ app.use(portfolioRoutes);
 
 app.listen(4000, () => {
   console.log(`auth server running on ${process.env.NODE_ENV} mode`);
-  //insertEODData();
+  insertEODData();
 });
 
-//startPriceUpdater();
-//startNewsCleanup();
+startPriceUpdater();
+startNewsCleanup();
