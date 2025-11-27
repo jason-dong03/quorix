@@ -106,7 +106,7 @@ export interface Portfolio{
   created_at: string;
 }
 export interface PortfolioContextType {
-  // Portfolio management
+  // portfolio management
   portfolios: Portfolio[];
   currentPortfolio: Portfolio | null;
   setCurrentPortfolio: (portfolio: Portfolio) => void;
@@ -116,24 +116,44 @@ export interface PortfolioContextType {
   deletePortfolio: (portfolioId: number) => Promise<void>;
   setDefaultPortfolio: (portfolioId: number) => Promise<void>;
 
-  // Holdings (filtered by current portfolio)
+  // holdings (filtered by current portfolio)
   holdings: Holding[];
   watchlist: WatchlistStock[];
   news: NewsItem[];
   availableStocks: WatchlistStock[];
   
   
-  // Refetch functions
+  // refetch functions
   refetchPortfolios: () => void;
   refetchHoldings: () => void;
   refetchWatchlist: () => void;
   
-  // Computed data
+  // positions for graph data
   positions: Position[];
 
-  // Risk metrics
+  // risk metrics
   riskScore: number;
   riskScoreLabel: string;
   diversificationPct: number;
   diversificationColor: [string, string];
+
+  isReady : boolean;
 }
+
+export type TourStep = {
+  id: string;
+  title: string;
+  content: string;
+  placement?: "left" | "right" | "bottom"; 
+};
+
+export type ProductTourProps = {
+  steps: TourStep[];
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+export type TooltipPosition = {
+  top: number;
+  left: number;
+};

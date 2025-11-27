@@ -49,7 +49,8 @@ function AINewsBar() {
       <div
         className={`card news-card mb-4 ${newsExpanded ? "news-expanded" : ""}`}
       >
-        <div className="card-body">
+        <div className="card-body"
+        data-tour-id="ai-news">
           {!newsExpanded ? (
             <div className="d-flex align-items-center justify-content-between">
               <button

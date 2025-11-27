@@ -19,6 +19,8 @@ import { useNavigate } from "react-router-dom";
 import BuyStockModal from "./components/BuyStockModal.tsx";
 import { usePortfolio } from "./context/PortfolioContext.tsx";
 import { usePortfolioActions } from "./hooks/usePortfolioActions.ts";
+import ProductGuide from "./components/ProductGuide.tsx";
+import { steps } from "./utils/tourSteps.ts";
 
 const Dashboard: React.FC = () => {
   useEffect(() => {
@@ -29,9 +31,26 @@ const Dashboard: React.FC = () => {
   }, []);
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const {watchlist, availableStocks } = usePortfolio();
+  const {watchlist, availableStocks, isReady } = usePortfolio();
   const {addToWatchlist, removeFromWatchlist, sellStock, sellAllLots } = usePortfolioActions();
 
+  const [isTourOpen, setIsTourOpen] = useState(false);
+    useEffect(() => {
+    if (!isReady) return;
+    const hasSeenTour = localStorage.getItem("hasSeenDashboardTour");
+    if (!hasSeenTour) {
+      const id = setTimeout(() => {
+        setIsTourOpen(true);
+        localStorage.setItem("hasSeenDashboardTour", "true");
+      }, 50); // 50–100ms
+      return () => clearTimeout(id);
+    }
+  }, [isReady]);
+
+
+  const handleStartTour = () => {
+    setIsTourOpen(true);
+  };
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/");
@@ -82,17 +101,16 @@ const Dashboard: React.FC = () => {
     <>
       <BuyStockModal stock={selectedStock} />
       <div className="portfolio-wrapper">
-        <Navbar/>
+        <Navbar onStartTour={handleStartTour} />
         <div className="container-fluid p-4">
           <AINewsBar />
           <div className="row g-4">
             <div className="col-lg-9">
-              <PortfolioHeader
-                timeframe={timeframe}
-                setTimeframe={setTimeframe}
-              />
-              <PortfolioGraph timeframe={timeframe} />
-
+                <PortfolioHeader
+                  timeframe={timeframe}
+                  setTimeframe={setTimeframe}
+                />        
+                <PortfolioGraph timeframe={timeframe} />
               <div className="card holdings-card">
                 <div className="card-body p-4">
                   <DashboardTabs
@@ -129,9 +147,11 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
             <div className="col-lg-3">
-              <TodaysPerformance />
-              <PortfolioStats />
-              <Insights />
+              <div data-tour-id="performances">
+                  <TodaysPerformance />
+                  <PortfolioStats />
+                  <Insights />
+              </div>
               <QuickActions />
             </div>
           </div>
@@ -144,8 +164,15 @@ const Dashboard: React.FC = () => {
         or fiduciary services. Nothing on this site should be treated as guidance on what 
         you should buy, sell, or hold.</p> 
       </footer>
+      <ProductGuide
+        steps={steps}
+        isOpen={isTourOpen}
+        onClose={() => setIsTourOpen(false)}
+      />
+
     </>
   );
 };
+
 
 export default Dashboard;

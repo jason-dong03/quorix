@@ -69,6 +69,11 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
   const {holdings,refetch: refetchHoldings,} = useFetchHoldingsData(currentPortfolioId);
   const { watchlistStocks: watchlist, refetch: refetchWatchlistRaw } = useFetchWatchlistData(currentPortfolioId);
   
+
+  const isReady = useMemo(
+    () => portfolios.length > 0 && !!currentPortfolio,
+    [portfolios, currentPortfolio]
+  );
   const setCurrentPortfolio = useCallback((portfolio: Portfolio) => {
     setCurrentPortfolioState(portfolio);
     localStorage.setItem("currentPortfolioId", portfolio.id.toString());
@@ -219,14 +224,12 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
     };
   }, [holdings, availableStocks]);
 
-  // ---- News for current holdings ----
   const symbols = useMemo(
     () => Array.from(new Set((holdings ?? []).map((h) => h.symbol))).sort(),
     [holdings]
   );
   const { news } = useFetchAiNews(symbols);
-
-  // ---- Context value ----
+  //context vals
   const value = useMemo<PortfolioContextType>(
     () => ({
       portfolios,
@@ -253,6 +256,7 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
       refetchPortfolios: refetchPortfoliosRaw,
       refetchHoldings,
       refetchWatchlist: refetchWatchlistRaw,
+      isReady, 
     }),
     [
       portfolios,
@@ -275,6 +279,7 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({
       refetchPortfoliosRaw,
       refetchHoldings,
       refetchWatchlistRaw,
+      isReady, 
     ]
   );
 

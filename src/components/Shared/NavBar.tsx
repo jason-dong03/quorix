@@ -1,11 +1,13 @@
 import React from "react";
-import { LogOut, Menu, User } from "lucide-react";
+import { CircleQuestionMark, LogOut, Menu, User } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { usePortfolio } from "../../context/PortfolioContext";
 
-
-const NavBar: React.FC = () => {
+type NavBarProps = {
+  onStartTour?: () => void;
+}
+const NavBar: React.FC<NavBarProps> = ({onStartTour}) => {
   const { user , logout} = useAuth();
   const location = useLocation();
   const {riskScore} = usePortfolio();
@@ -103,6 +105,15 @@ const NavBar: React.FC = () => {
           </ul>
 
           <div className="d-flex align-items-center ms-lg-3">
+            {onStartTour &&  (
+              <button
+                type="button"
+                className="btn mt-1 pe-3"
+                onClick={onStartTour}
+                title="Show quick tour">
+                <CircleQuestionMark size={24} color="grey" />
+              </button>
+            )}
             <div className="text-end d-none d-lg-block me-3">
               <div className="small text-light fw-semibold">{user.name}</div>
               <small className="small text-muted">Risk: {riskScore} / 10</small>

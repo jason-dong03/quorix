@@ -219,7 +219,8 @@ export const PortfolioGraph: React.FC<PortfolioGraphProps> = ({ timeframe }) => 
         onToggleDIA={toggleDIA}
       />
 
-      <div className="card-body p-4">
+      <div className="card-body p-4"
+      data-tour-id="portfolio-graph">
         <ResponsiveContainer width="100%" height={400}>
           <AreaChart data={extendedData}>
             <defs>

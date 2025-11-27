@@ -12,29 +12,32 @@ export const DashboardTabs: React.FC<DashboardTabsProps> =
   setHoldingsTab,
   searchQuery, 
   setSearchQuery, filteredStocks }) => { 
-    const { holdings, watchlist } = usePortfolio(); 
+    const { holdings, watchlist, availableStocks } = usePortfolio(); 
     const handleTabChange = (tab: "holdings" | "watchlist" | "addstock") => { 
         setHoldingsTab(tab); 
         if (tab !== "addstock"){ 
           setSearchQuery("");       
         } 
-  }; return ( <>
+  }; return ( <> 
    <ul className="nav nav-pills mb-4 gap-2"> 
     <li className="nav-item">
        <button onClick={() => setHoldingsTab("holdings")} 
-        className={`nav-link ${holdingsTab === "holdings" ? "active" : ""}`} > 
+        className={`nav-link ${holdingsTab === "holdings" ? "active" : ""}`} 
+        data-tour-id="holdings-table"> 
         Holdings ({holdings.length}) 
        </button>
     </li> 
     <li className="nav-item"> 
       <button onClick={() => setHoldingsTab("watchlist")} 
+        data-tour-id="watchlist-tab" 
         className={`nav-link ${holdingsTab === "watchlist" ? "active" : "" }`} > 
         Watchlist ({watchlist.length}) 
       </button> </li> 
     <li className="nav-item"> 
       <button onClick={() => handleTabChange("addstock")} 
+      data-tour-id="search-tab"
       className={`nav-link ${holdingsTab === "addstock" ? "active" : ""}`} >
-         Search </button> </li> 
+         Search ({availableStocks.length})</button> </li> 
     </ul> 
     {holdingsTab === "addstock" && 
     ( <div className="mb-4"> 

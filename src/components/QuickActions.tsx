@@ -5,7 +5,7 @@ export function QuickActions() {
         <div className="card-body">
           <h6 className="mb-3">Quick Actions</h6>
           <div className="d-grid gap-2">
-            <button className="btn btn-primary">View Recommendations</button>
+            <button className="btn btn-primary">View Analysis</button>
             <button className="btn btn-outline-secondary">
               Rebalance Portfolio
             </button>

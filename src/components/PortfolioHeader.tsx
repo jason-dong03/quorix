@@ -69,7 +69,8 @@ export const PortfolioHeader: React.FC<PortfolioHeaderProps> = ({
               </div>
             </div>
 
-            <div className="btn-group mt-4" role="group">
+            <div className="btn-group mt-4" role="group"
+            data-tour-id="portfolio-graph-tabs">
               {["1D", "5D", "1M"].map((tf) => (
                 <button
                   key={tf}

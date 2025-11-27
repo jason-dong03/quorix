@@ -17,15 +17,15 @@ const MarketSentiment: React.FC = () =>{
             
             <div className="mb-2 d-flex justify-content-between">
                 <span className="text-white-50" style={{ fontSize: '0.875rem' }}>S&P 500</span>
-                <span className={`${sentiment?.sp500 && sentiment?.sp500?.last_change_pct>0? "text-success": "text-danger"} fw-semibold`}>{sentiment?.sp500?.last_change_pct}%</span>
+                <span className={`${sentiment?.sp500 && sentiment?.sp500?.last_change_pct>0? "text-success": "text-danger"} fw-semibold`}>{sentiment?.sp500 && sentiment?.sp500?.last_change_pct>0? "+": "-"}{sentiment?.sp500?.last_change_pct}%</span>
             </div>
             <div className="mb-2 d-flex justify-content-between">
                 <span className="text-white-50" style={{ fontSize: '0.875rem' }}>NASDAQ</span>
-                <span className={`${sentiment?.nasdaq && sentiment?.nasdaq?.last_change_pct>0? "text-success": "text-danger"} fw-semibold`}>{sentiment?.nasdaq?.last_change_pct}%</span>
+                <span className={`${sentiment?.nasdaq && sentiment?.nasdaq?.last_change_pct>0? "text-success": "text-danger"} fw-semibold`}>{sentiment?.nasdaq && sentiment?.nasdaq?.last_change_pct>0? "+": "-"}{sentiment?.nasdaq?.last_change_pct}%</span>
             </div>
             <div className="mb-4 d-flex justify-content-between">
                 <span className="text-white-50" style={{ fontSize: '0.875rem' }}>DOW</span>
-                <span className={`${sentiment?.dow && sentiment?.dow?.last_change_pct>0? "text-success": "text-danger"} fw-semibold`}>{sentiment?.dow?.last_change_pct}%</span>
+                <span className={`${sentiment?.dow && sentiment?.dow?.last_change_pct>0? "text-success": "text-danger"} fw-semibold`}>{sentiment?.dow && sentiment?.dow?.last_change_pct>0? "+": "-"}{sentiment?.dow?.last_change_pct}%</span>
             </div>
 
             <div className="pt-3" style={{ borderTop: '1px solid rgba(51, 65, 85, 1)' }}>

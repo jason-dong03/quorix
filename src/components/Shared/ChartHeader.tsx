@@ -200,7 +200,7 @@ export const ChartHeader: React.FC<ChartHeaderProps> = ({
   return (
     <>
       <div className="d-flex justify-content-between align-items-center p-3 ps-4">
-        <div className="dropdown">
+        <div className="dropdown" data-tour-id="portfolio-selector">
           <button
             className="btn dropdown-toggle portfolio-dropdown-toggle ps-3"
             type="button"
@@ -253,12 +253,12 @@ export const ChartHeader: React.FC<ChartHeaderProps> = ({
           </ul>
         </div>
 
-        {/* Index toggle buttons */}
         <div className="d-flex align-items-center gap-3">
           <div
             className="btn-group index-toggle-group"
             role="group"
             aria-label="Compare Indexes"
+            data-tour-id="benchmark-toggle"
           >
             <button
               type="button"

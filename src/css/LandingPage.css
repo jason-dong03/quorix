@@ -240,7 +240,7 @@
 
 .glass-card-container {
   position: relative;
-  max-width: 400px;
+  max-width: 650px;
   width: 100%;
 }
 
@@ -260,7 +260,7 @@
   opacity: 0.25;
 }
 
-/* Glass Card */
+
 .glass-card {
   position: relative;
   background: rgba(255, 255, 255, 0.03);
@@ -273,7 +273,6 @@
   overflow: hidden;
 }
 
-/* Shimmer Overlay */
 .shimmer-overlay {
   position: absolute;
   inset: 0;
@@ -304,7 +303,6 @@
   font-size: 0.9375rem;
 }
 
-/* Google Sign In Button */
 .google-signin-btn {
   background-color: white;
   color: #1e293b;
